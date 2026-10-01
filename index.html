@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>German Antonelli | Portfolio</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: #0d1117;
             color: #c9d1d9;
             margin: 0;
@@ -14,53 +14,146 @@
             display: flex;
             justify-content: center;
         }
-        .portfolio-container { max-width: 700px; width: 100%; }
-        h1 { color: #58a6ff; font-size: 2.2rem; margin-bottom: 5px; }
-        p.subtitle { color: #8b949e; font-size: 1.1rem; margin-top: 0; margin-bottom: 40px; }
-        h2 { color: #f0f6fc; border-bottom: 1px solid #21262d; padding-bottom: 10px; font-size: 1.4rem; margin-top: 30px; }
-        ul { list-style-type: none; padding: 0; }
-        li {
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #58a6ff;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #8b949e;
+            font-size: 1.1rem;
+            margin-bottom: 35px;
+        }
+        h2 {
+            color: #f0f6fc;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        .project-card {
             background-color: #161b22;
             border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 15px 20px;
-            margin-bottom: 12px;
-            font-size: 1.05rem;
-            color: #e6edf3;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .project-card h3 {
+            margin-top: 0;
+            color: #f0f6fc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tech-stack {
+            font-size: 0.85rem;
+            color: #58a6ff;
+            background-color: #1f242c;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: normal;
+        }
+        .project-card ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+            color: #8b949e;
+        }
+        .project-card li {
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        .form-section {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
         }
         input[type="text"] {
-            padding: 12px; width: 65%; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: white; font-size: 1rem; margin-right: 10px;
+            flex: 1;
+            padding: 10px;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: white;
         }
         .submit-btn {
-            padding: 12px 20px; background: #238636; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            padding: 10px 20px;
+            background-color: #238636;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
         }
+        .submit-btn:hover { background-color: #2ea043; }
+        footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="portfolio-container">
-        <h1>Welcome to the Portfolio of <span th:text="${developerName}">Developer</span></h1>
-        <p class="subtitle">Building real-world software engineering systems.</p>
 
-        <h2>Project Showcase</h2>
-        <ul>
-            <li th:each="project : ${myProjects}" th:text="${project.name}">Project Name Placeholder</li>
-        </ul>
+    <div class="container">
+        <h1>Welcome to the Portfolio of German</h1>
+        <p class="subtitle">Building real-world software engineering systems & scalable web architectures.</p>
 
+        <h2>Featured Projects</h2>
+
+        <!-- Project 1 -->
+        <div class="project-card">
+            <h3>Dynamic Full-Stack Web Architecture Portfolio <span class="tech-stack">Java • Spring Boot MVC • Thymeleaf</span></h3>
+            <ul>
+                <li>Engineered a live full-stack, enterprise-grade web application portfolio leveraging the Model-View-Controller (MVC) architectural pattern[cite: 7].</li>
+                <li>Architected an interactive content submission and verification portal mapping user-submitted assets dynamically[cite: 7].</li>
+                <li>Constructed a secure private administration gateway featuring customized request authentication checkpoints[cite: 7].</li>
+            </ul>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+            <h3>Small Business Operations & Inventory Tracker <span class="tech-stack">Java • OOP • File I/O</span></h3>
+            <ul>
+                <li>Architecting an object-oriented desktop application engineered to monitor core business workflows, material margins, and labor matrices[cite: 7].</li>
+                <li>Utilizing structural encapsulation, polymorphism, and inheritance paradigms alongside file I/O operations for data integrity[cite: 7].</li>
+            </ul>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card">
+            <h3>Programmatic Matrix & Linear Algebra Solver <span class="tech-stack">Python • Data Structures</span></h3>
+            <ul>
+                <li>Constructing a functional command-line engine to calculate system transformations, determinants, and linear equation systems[cite: 7].</li>
+                <li>Converting core Calculus and Discrete Mathematics theories into optimized data functions[cite: 7].</li>
+            </ul>
+        </div>
+
+        <!-- Dynamic Proposal Section -->
         <h2>Suggest a Project Extension</h2>
-        <form th:action="@{/add-project}" method="POST">
-            <input type="text" name="projectName" placeholder="Enter project idea..." required>
-            <button type="submit" class="submit-btn">Submit Idea</button>
-                <!-- ... keeping your project suggestion form directly above ... -->
-        </form>
+        <div class="form-section">
+            <form action="#" method="POST" class="form-group">
+                <input type="text" name="idea" placeholder="Enter project feature idea..." required>
+                <button type="submit" class="submit-btn">Submit Idea</button>
+            </form>
+        </div>
 
-        <!-- Small professional navigation footer containing your admin doorway -->
-        <footer style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #21262d; display: flex; justify-content: space-between; font-size: 0.85rem; color: #8b949e;">
+        <footer>
             <span>© 2026 German Antonelli</span>
-            <a href="./admin" style="color: #8b949e; text-decoration: none; font-weight: 500; transition: color 0.2s;" 
-               onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
-                Admin Dashboard Interface →
-            </a>
+            <a href="./login.html">Admin Dashboard Interface →</a>
         </footer>
-    </div> <!-- This is your existing portfolio-container closing tag -->
+    </div>
+
 </body>
 </html>
