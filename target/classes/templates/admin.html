@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 40px 20px; display: flex; justify-content: center; }
+        .admin-container { max-width: 700px; width: 100%; }
+        h1 { color: #f85149; border-bottom: 1px solid #21262d; padding-bottom: 10px; }
+        .pending-card {
+            display: flex; justify-content: space-between; align-items: center; background: #161b22; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #30363d;
+        }
+        .approve-btn { padding: 8px 16px; background: #1f6feb; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .reject-btn { padding: 8px 16px; background: #da3633; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Private Approval Dashboard</h1>
+        <p style="color: #8b949e;">Review inbound recommendations before publishing them live.</p>
+        
+        <!-- Checks if our pendingProjects model collection variable is empty -->
+        <p th:if="${pendingProjects == null || pendingProjects.isEmpty()}" style="color: #8b949e; font-style: italic;">No items currently awaiting authorization.</p>
+        
+        <!-- Loops through the pendingProjects list securely -->
+        <div th:each="project, iterStat : ${pendingProjects}" class="pending-card">
+            <span th:text="${project.name}" style="font-weight: 500;">Pending Project Name</span>
+            
+            <div style="display: flex; gap: 10px;">
+                <!-- Approve Form -->
+                <form th:action="@{/approve-project}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="projectIndex" th:value="${iterStat.index}">
+                    <button type="submit" class="approve-btn">Approve Live</button>
+                </form>
+
+                <!-- Reject Form -->
+                <form th:action="@{/reject-project}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="projectIndex" th:value="${iterStat.index}">
+                    <button type="submit" class="reject-btn">Reject</button>
+                </form>
+            </div>
+        </div>
+        
+        <p style="margin-top: 30px; display: flex; justify-content: space-between;">
+            <a href="./" style="color: #58a6ff; text-decoration: none;">← Back to Public Website</a>
+            <a href="./logout" style="color: #f85149; text-decoration: none; font-weight: bold;">Sign Out →</a>
+        </p>
+    </div>
+</body>
+</html>
