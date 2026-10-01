@@ -525,12 +525,12 @@
 
                 try {
                     // Send the idea as JSON to the backend endpoint.
-                    const response = await fetch(`${API_BASE_URL}/api/ideas`, {
+                    const response = await fetch(`${API_BASE_URL}/api/add-project`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ idea })
+                        body: JSON.stringify({ projectName: idea })
                     });
 
                     // fetch() does not automatically throw for HTTP errors.
