@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,6 +55,7 @@
             border-radius: 6px;
             margin-bottom: 20px;
             font-size: 0.9rem;
+            display: none; /* Hidden by default for static site */
         }
         a { color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
     </style>
@@ -64,11 +65,10 @@
     <div class="login-box">
         <h2>Admin Sign-In</h2>
         
-        <!-- Error panel displays dynamically if validation fails -->
-        <div class="error-banner" th:if="${errorMessage}" th:text="${errorMessage}">Error Message</div>
+        <!-- Error panel (set display to none for static HTML) -->
+        <div class="error-banner">Invalid security signature</div>
 
-        <form th:action="@{/login}" method="POST">
-            <!-- This name attribute matches your Java RequestParam exactly -->
+        <form action="#" method="POST">
             <input type="password" name="adminPassword" placeholder="Enter security signature..." required autofocus>
             <button type="submit" class="login-btn">Authenticate Access</button>
         </form>
