@@ -1,46 +1,75 @@
 package com.example.demo;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = {"https://antonelli.dev", "http://127.0.0.1:5500", "http://localhost:5500"})
 public class HomeController {
 
-    // Global session simulation tracker
     private boolean isAdminLoggedIn = false;
 
-    // Storing our custom Objects instead of raw strings
-    private List<ProjectItem> masterProjectList = new ArrayList<>(List.of(
-        new ProjectItem("Personal Task Tracker Application", true),
-        new ProjectItem("Relational Database Manager", true),
-        new ProjectItem("System Performance Monitor", true)
+    private final List<ProjectItem> masterProjectList = new ArrayList<>(List.of(
+        new ProjectItem("Dynamic Full-Stack Web Architecture Portfolio", true),
+        new ProjectItem("Small Business Operations & Inventory Tracker", true),
+        new ProjectItem("Programmatic Matrix & Linear Algebra Solver", true)
     ));
 
-    @GetMapping("/")
-    public String homePage(Model model) {
-        model.addAttribute("developerName", "German");
-
+    // GET /api/projects - Returns approved projects for public site
+    @GetMapping("/projects")
+    public List<ProjectItem> getPublicProjects() {
         List<ProjectItem> approvedOnly = new ArrayList<>();
         for (ProjectItem item : masterProjectList) {
             if (item.isApproved()) {
                 approvedOnly.add(item);
             }
         }
-        model.addAttribute("myProjects", approvedOnly);
-        return "home";
+        return approvedOnly;
     }
 
-    // 1. SECURE ADMIN ROUTE
-    @GetMapping("/admin")
-    public String adminPage(Model model) {
-        // Intercept: If you are not signed in, render the login portal view immediately
+    // POST /api/add-project - Recruiter submits a project idea (defaults to unapproved)
+    @PostMapping("/add-project")
+    public ResponseEntity<Map<String, String>> addProject(@RequestBody Map<String, String> payload) {
+        String newProjectName = payload.get("projectName");
+        if (newProjectName != null && !newProjectName.trim().isEmpty()) {
+            masterProjectList.add(new ProjectItem(newProjectName.trim(), false));
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Project idea submitted for review!"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Project name cannot be empty."));
+    }
+
+    // POST /api/login - Authenticate admin password
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> handleLogin(@RequestBody Map<String, String> payload) {
+        String password = payload.get("adminPassword");
+        if ("TheEngineer123".equals(password)) {
+            isAdminLoggedIn = true;
+            return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "authenticated", true,
+                "message", "Admin authentication successful."
+            ));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "status", "error",
+                "authenticated", false,
+                "message", "Invalid engineering signature password."
+            ));
+        }
+    }
+
+    // GET /api/admin/pending - Get unapproved project suggestions for admin review
+    @GetMapping("/admin/pending")
+    public ResponseEntity<?> getPendingProjects() {
         if (!isAdminLoggedIn) {
-            return "login";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized access."));
         }
 
         List<ProjectItem> pendingOnly = new ArrayList<>();
@@ -49,80 +78,61 @@ public class HomeController {
                 pendingOnly.add(item);
             }
         }
-        model.addAttribute("pendingProjects", pendingOnly);
-        return "admin";
+        return ResponseEntity.ok(pendingOnly);
     }
 
-    // 2. DISPLAY LOGIN PAGE ROUTE
-    @GetMapping("/login")
-    public String showLoginPage(Model model) {
-        return "login"; // Loads login.html
-    }
+    // POST /api/approve-project - Approve pending project
+    @PostMapping("/approve-project")
+    public ResponseEntity<Map<String, String>> approveProject(@RequestBody Map<String, Integer> payload) {
+        if (!isAdminLoggedIn) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized access."));
+        }
 
-    // 3. PROCESS LOGIN SUBMISSION ROUTE
-    @PostMapping("/login")
-    public String handleLogin(@RequestParam("adminPassword") String password, Model model) {
-        // Authenticating against your new custom password: TheEngineer123
-        if ("TheEngineer123".equals(password)) {
-            isAdminLoggedIn = true;
-            
-            // Load the admin dashboard data and view immediately on the spot
-            List<ProjectItem> pendingOnly = new ArrayList<>();
+        Integer index = payload.get("projectIndex");
+        if (index != null) {
+            int pendingCount = 0;
             for (ProjectItem item : masterProjectList) {
                 if (!item.isApproved()) {
-                    pendingOnly.add(item);
+                    if (pendingCount == index) {
+                        item.setApproved(true);
+                        return ResponseEntity.ok(Map.of("status", "success", "message", "Project approved!"));
+                    }
+                    pendingCount++;
                 }
             }
-            model.addAttribute("pendingProjects", pendingOnly);
-            return "admin"; // Loads admin.html directly without a browser redirection
-        } else {
-            model.addAttribute("errorMessage", "Invalid engineering signature password.");
-            return "login"; // Reloads login.html directly with the error text block
         }
+        return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Invalid project index."));
     }
 
-    // 4. LOGOUT ROUTE
-    @GetMapping("/logout")
-    public String handleLogout(Model model) {
-        isAdminLoggedIn = false;
-        return homePage(model); // Directly renders home screen layout without redirecting
-    }
-
-    @PostMapping("/add-project")
-    public String addProject(@RequestParam("projectName") String newProjectName, Model model) {
-        if (newProjectName != null && !newProjectName.trim().isEmpty()) {
-            masterProjectList.add(new ProjectItem(newProjectName, false));
-        }
-        return homePage(model); // Directly refreshes public content views on the spot
-    }
-
-    @PostMapping("/approve-project")
-    public String approveProject(@RequestParam("projectIndex") int index, Model model) {
-        int pendingCount = 0;
-        for (ProjectItem item : masterProjectList) {
-            if (!item.isApproved()) {
-                if (pendingCount == index) {
-                    item.setApproved(true);
-                    break;
-                }
-                pendingCount++;
-            }
-        }
-        return adminPage(model); // Directly updates and loads admin panel state details
-    }
-
+    // POST /api/reject-project - Reject/delete pending project
     @PostMapping("/reject-project")
-    public String rejectProject(@RequestParam("projectIndex") int index, Model model) {
-        int pendingCount = 0;
-        for (int i = 0; i < masterProjectList.size(); i++) {
-            if (!masterProjectList.get(i).isApproved()) {
-                if (pendingCount == index) {
-                    masterProjectList.remove(i);
-                    break;
+    public ResponseEntity<Map<String, String>> rejectProject(@RequestBody Map<String, Integer> payload) {
+        if (!isAdminLoggedIn) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized access."));
+        }
+
+        Integer index = payload.get("projectIndex");
+        if (index != null) {
+            int pendingCount = 0;
+            for (int i = 0; i < masterProjectList.size(); i++) {
+                if (!masterProjectList.get(i).isApproved()) {
+                    if (pendingCount == index) {
+                        masterProjectList.remove(i);
+                        return ResponseEntity.ok(Map.of("status", "success", "message", "Project rejected."));
+                    }
+                    pendingCount++;
                 }
-                pendingCount++;
             }
         }
-        return adminPage(model); // Directly refreshes layout configuration records on the spot
+        return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Invalid project index."));
+    }
+
+    // POST /api/logout - Admin logout
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> handleLogout() {
+        isAdminLoggedIn = false;
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Logged out successfully."));
     }
 }
