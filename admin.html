@@ -1,51 +1,228 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Admin Panel</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 40px 20px; display: flex; justify-content: center; }
-        .admin-container { max-width: 700px; width: 100%; }
-        h1 { color: #f85149; border-bottom: 1px solid #21262d; padding-bottom: 10px; }
-        .pending-card {
-            display: flex; justify-content: space-between; align-items: center; background: #161b22; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #30363d;
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
         }
-        .approve-btn { padding: 8px 16px; background: #1f6feb; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .reject-btn { padding: 8px 16px; background: #da3633; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .admin-container { max-width: 700px; width: 100%; }
+        h1 {
+            color: #f85149;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 10px;
+        }
+        .pending-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background: #161b22;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
+        .actions { display: flex; gap: 10px; }
+        button {
+            padding: 8px 16px;
+            color: white;
+            border: 0;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:disabled { opacity: .6; cursor: wait; }
+        .approve-btn { background: #1f6feb; }
+        .reject-btn { background: #da3633; }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        #sign-out { color: #f85149; }
+        #status { min-height: 1.4em; color: #8b949e; }
+
+        @media (max-width: 550px) {
+            .pending-card {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="admin-container">
+    <main class="admin-container">
         <h1>Private Approval Dashboard</h1>
-        <p style="color: #8b949e;">Review inbound recommendations before publishing them live.</p>
-        
-        <!-- Checks if our pendingProjects model collection variable is empty -->
-        <p th:if="${pendingProjects == null || pendingProjects.isEmpty()}" style="color: #8b949e; font-style: italic;">No items currently awaiting authorization.</p>
-        
-        <!-- Loops through the pendingProjects list securely -->
-        <div th:each="project, iterStat : ${pendingProjects}" class="pending-card">
-            <span th:text="${project.name}" style="font-weight: 500;">Pending Project Name</span>
-            
-            <div style="display: flex; gap: 10px;">
-                <!-- Approve Form -->
-                <form th:action="@{/approve-project}" method="POST" style="margin: 0;">
-                    <input type="hidden" name="projectIndex" th:value="${iterStat.index}">
-                    <button type="submit" class="approve-btn">Approve Live</button>
-                </form>
+        <p>Review inbound recommendations before publishing them live.</p>
 
-                <!-- Reject Form -->
-                <form th:action="@{/reject-project}" method="POST" style="margin: 0;">
-                    <input type="hidden" name="projectIndex" th:value="${iterStat.index}">
-                    <button type="submit" class="reject-btn">Reject</button>
-                </form>
-            </div>
-        </div>
-        
-        <p style="margin-top: 30px; display: flex; justify-content: space-between;">
-            <a href="./" style="color: #58a6ff; text-decoration: none;">← Back to Public Website</a>
-            <a href="./logout" style="color: #f85149; text-decoration: none; font-weight: bold;">Sign Out →</a>
+        <p id="status" role="status" aria-live="polite">
+            Loading suggestions...
         </p>
-    </div>
+        <div id="pending-list"></div>
+
+        <nav class="navigation">
+            <a href="./">← Back to Public Website</a>
+            <a id="sign-out" href="./login.html">Sign Out →</a>
+        </nav>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'https://portfolio-j3hj.onrender.com';
+        const TOKEN_KEY = 'portfolioAdminToken';
+        const status = document.getElementById('status');
+        const list = document.getElementById('pending-list');
+
+        // Redirect visitors without a token to the login page.
+        function requireLogin() {
+            const token = sessionStorage.getItem(TOKEN_KEY);
+
+            if (!token) {
+                window.location.replace('./login.html');
+            }
+
+            return token;
+        }
+
+        // Include the login token with every admin request.
+        async function adminRequest(path, options = {}) {
+            const token = requireLogin();
+            if (!token) return null;
+
+            const response = await fetch(`${API_BASE_URL}/api/${path}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...(options.body
+                        ? { 'Content-Type': 'application/json' }
+                        : {})
+                }
+            });
+
+            // An expired or revoked token requires another login.
+            if (response.status === 401) {
+                sessionStorage.removeItem(TOKEN_KEY);
+                window.location.replace('./login.html');
+                return null;
+            }
+
+            if (!response.ok) {
+                throw new Error(`Request failed (${response.status}).`);
+            }
+
+            return response.json();
+        }
+
+        // Fetch pending suggestions and draw their controls.
+        async function loadPending() {
+            try {
+                const projects = await adminRequest('admin/pending');
+                if (!projects) return;
+
+                list.replaceChildren();
+
+                status.textContent = projects.length
+                    ? `${projects.length} suggestion${projects.length === 1 ? '' : 's'} awaiting review.`
+                    : 'No items currently awaiting authorization.';
+
+                projects.forEach((project, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'pending-card';
+
+                    const name = document.createElement('span');
+
+                    // textContent prevents submitted names from becoming HTML.
+                    name.textContent = project.name;
+
+                    const actions = document.createElement('div');
+                    actions.className = 'actions';
+
+                    for (const [label, route, className] of [
+                        ['Approve Live', 'approve-project', 'approve-btn'],
+                        ['Reject', 'reject-project', 'reject-btn']
+                    ]) {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.textContent = label;
+                        button.className = className;
+
+                        button.addEventListener('click', () => {
+                            updateProject(route, index);
+                        });
+
+                        actions.append(button);
+                    }
+
+                    card.append(name, actions);
+                    list.append(card);
+                });
+            } catch (error) {
+                status.textContent =
+                    'Could not load suggestions. Please try refreshing.';
+
+                console.error('Admin load failed:', error);
+            }
+        }
+
+        // Approve or reject a suggestion, then refresh the list.
+        async function updateProject(route, index) {
+            const buttons = list.querySelectorAll('button');
+
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+
+            try {
+                const result = await adminRequest(route, {
+                    method: 'POST',
+                    body: JSON.stringify({ projectIndex: index })
+                });
+
+                if (!result) return;
+                await loadPending();
+            } catch (error) {
+                status.textContent =
+                    'Could not update the suggestion. Please try again.';
+
+                buttons.forEach(button => {
+                    button.disabled = false;
+                });
+
+                console.error('Admin update failed:', error);
+            }
+        }
+
+        // Tell the backend to revoke this token and clear this tab's copy.
+        document.getElementById('sign-out').addEventListener(
+            'click',
+            async event => {
+                event.preventDefault();
+
+                try {
+                    await adminRequest('logout', { method: 'POST' });
+                } catch (error) {
+                    console.error('Logout request failed:', error);
+                } finally {
+                    sessionStorage.removeItem(TOKEN_KEY);
+                    window.location.replace('./login.html');
+                }
+            }
+        );
+
+        // Start only when this tab has a login token.
+        if (requireLogin()) {
+            loadPending();
+        }
+    </script>
 </body>
 </html>
