@@ -10,7 +10,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"https://antonelli.dev", "http://127.0.0.1:5500", "http://localhost:5500"})
+@CrossOrigin(origins = {
+    "https://antonelli.dev",
+    "https://www.antonelli.dev",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500"
+})
 public class HomeController {
 
     private boolean isAdminLoggedIn = false;
