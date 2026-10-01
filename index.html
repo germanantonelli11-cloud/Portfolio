@@ -155,5 +155,31 @@
         </footer>
     </div>
 
+    <!-- PASTE YOUR API CONFIGURATION AND JAVASCRIPT HERE -->
+    <script>
+        const API_BASE_URL = 'https://your-api-domain.com'; // Replace with your actual API backend URL
+
+        // Example: If you are handling the form submission via JavaScript fetch/AJAX:
+        document.querySelector('.form-group').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = e.target.querySelector('input[name="idea"]').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ideas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idea: input })
+                });
+                
+                if (response.ok) {
+                    alert('Idea submitted successfully!');
+                    e.target.reset();
+                }
+            } catch (error) {
+                console.error('Error submitting idea:', error);
+            }
+        });
+    </script>
+
 </body>
 </html>
