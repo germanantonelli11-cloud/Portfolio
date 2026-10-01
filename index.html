@@ -1,53 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Lets the page display letters and symbols correctly. -->
     <meta charset="UTF-8">
+
+    <!-- Makes the layout fit phones, tablets, and desktop screens. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Text shown in the browser tab. -->
     <title>German Antonelli | Portfolio</title>
+
     <style>
+        /* Include padding and borders inside an element's declared width. */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Set the default font, colors, and spacing for the entire page. */
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: #0d1117;
             color: #c9d1d9;
             margin: 0;
             padding: 40px 20px;
-            display: flex;
-            justify-content: center;
         }
+
+        /* Center the page content and prevent it from getting too wide. */
         .container {
             max-width: 800px;
-            width: 100%;
+            margin: 0 auto;
         }
+
+        /* Style the main name heading. */
         h1 {
             color: #58a6ff;
             font-size: 2.2rem;
             margin-bottom: 8px;
         }
+
+        /* Style the short description below the name. */
         .subtitle {
             color: #8b949e;
             font-size: 1.1rem;
             margin-bottom: 35px;
         }
+
+        /* Style section headings such as "Featured Projects." */
         h2 {
             color: #f0f6fc;
             border-bottom: 1px solid #30363d;
             padding-bottom: 10px;
             margin-top: 40px;
         }
+
+        /* Give each project its card appearance and hover animation. */
         .project-card {
             background-color: #161b22;
             border: 1px solid #30363d;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            cursor: pointer;
+            transition:
+                transform 0.2s ease,
+                border-color 0.2s ease,
+                background-color 0.2s ease;
         }
+
+        /* Highlight a project when hovered over or selected with a keyboard. */
+        .project-card:hover,
+        .project-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: #58a6ff;
+            background-color: #1f242c;
+        }
+
+        /* Place the project title and technology label on the same row. */
         .project-card h3 {
             margin-top: 0;
             color: #f0f6fc;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
         }
+
+        /* Style the label showing which technologies a project uses. */
         .tech-stack {
             font-size: 0.85rem;
             color: #58a6ff;
@@ -56,15 +94,21 @@
             border-radius: 4px;
             font-weight: normal;
         }
+
+        /* Format the lists inside project cards. */
         .project-card ul {
-            margin: 10px 0 0 0;
+            margin: 10px 0 0;
             padding-left: 20px;
             color: #8b949e;
         }
+
+        /* Add breathing room between project description items. */
         .project-card li {
             margin-bottom: 6px;
             line-height: 1.4;
         }
+
+        /* Give the idea submission form its own card. */
         .form-section {
             background-color: #161b22;
             border: 1px solid #30363d;
@@ -72,18 +116,25 @@
             padding: 20px;
             margin-top: 30px;
         }
+
+        /* Put the text field and submit button next to each other. */
         .form-group {
             display: flex;
             gap: 10px;
         }
+
+        /* Style the field where visitors type an idea. */
         input[type="text"] {
             flex: 1;
+            min-width: 0;
             padding: 10px;
             background-color: #0d1117;
             border: 1px solid #30363d;
             border-radius: 6px;
             color: white;
         }
+
+        /* Style the form's submit button. */
         .submit-btn {
             padding: 10px 20px;
             background-color: #238636;
@@ -93,93 +144,414 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .submit-btn:hover { background-color: #2ea043; }
+
+        /* Change the button color when hovered over. */
+        .submit-btn:hover {
+            background-color: #2ea043;
+        }
+
+        /* Show that the button is unavailable while a request is running. */
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        /* Style the success or error message below the form. */
+        #form-status {
+            margin-bottom: 0;
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+
+        /* Arrange the copyright text and admin link in the footer. */
         footer {
             margin-top: 50px;
             display: flex;
             justify-content: space-between;
+            gap: 16px;
             color: #8b949e;
             font-size: 0.9rem;
         }
-        a { color: #58a6ff; text-decoration: none; }
+
+        /* Set the color and remove underlines from links. */
+        a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        /*
+         * The modal overlay covers the screen.
+         * It starts invisible and does not receive clicks until opened.
+         */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 9999;
+        }
+
+        /* JavaScript adds this class to show the modal. */
+        .modal-overlay.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Style the box displayed in the middle of the modal. */
+        .modal-content {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            text-align: center;
+            color: #f0f6fc;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        /* Slide the box into place when the modal opens. */
+        .modal-overlay.is-active .modal-content {
+            transform: translateY(0);
+        }
+
+        /* Position and style the X button in the modal. */
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #8b949e;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        /* Brighten the X button when hovered over. */
+        .close-button:hover {
+            color: #f0f6fc;
+        }
+
+        /* Animate the rocket icon in the modal. */
+        .spinner-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Style the "Development Phase" label. */
+        .modal-status-badge {
+            display: inline-block;
+            background: #1f242c;
+            color: #58a6ff;
+            border: 1px solid #30363d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 10px 0 20px;
+        }
+
+        /* Create the track behind the decorative progress bar. */
+        .progress-bar-container {
+            background: #0d1117;
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 25px;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
+
+        /* Fill 75% of the decorative progress bar. */
+        .progress-bar {
+            background: linear-gradient(90deg, #58a6ff, #bc8cff);
+            width: 75%;
+            height: 100%;
+        }
+
+        /* Move the rocket slightly up and down. */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Stack elements vertically when the screen is narrow. */
+        @media (max-width: 600px) {
+            .project-card h3 {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Respect a visitor's system setting to reduce animation. */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
+
 <body>
-
-    <div class="container">
+    <!-- Main content of the portfolio. -->
+    <main class="container">
+        <!-- Introduction shown at the top of the page. -->
         <h1>Welcome to the German's Portfolio</h1>
-        <p class="subtitle">Building real-world software engineering systems & scalable web architectures.</p>
+        <p class="subtitle">
+            Building real-world software engineering systems &amp; scalable web architectures.
+        </p>
 
-        <h2>Featured Projects</h2>
+        <!-- Project cards open the coming-soon modal when clicked. -->
+        <h2>Featured Projects (Click to expand)</h2>
 
-        <!-- Project 1 -->
-        <div class="project-card">
-            <h3>Dynamic Full-Stack Web Architecture Portfolio <span class="tech-stack">Java • Spring Boot MVC • Thymeleaf</span></h3>
+        <!-- Project 1: its data-project-title becomes the modal title. -->
+        <div
+            class="project-card"
+            role="button"
+            tabindex="0"
+            data-project-title="Dynamic Full-Stack Web Architecture Portfolio"
+        >
+            <h3>
+                Dynamic Full-Stack Web Architecture Portfolio
+                <span class="tech-stack">Java • Spring Boot MVC • Thymeleaf</span>
+            </h3>
             <ul>
-                <li>Engineered a live full-stack, enterprise-grade web application portfolio leveraging the Model-View-Controller (MVC) architectural pattern[cite: 7].</li>
-                <li>Architected an interactive content submission and verification portal mapping user-submitted assets dynamically[cite: 7].</li>
-                <li>Constructed a secure private administration gateway featuring customized request authentication checkpoints[cite: 7].</li>
+                <li>Engineered a live full-stack, enterprise-grade web application portfolio leveraging the Model-View-Controller (MVC) architectural pattern.</li>
+                <li>Architected an interactive content submission and verification portal mapping user-submitted assets dynamically.</li>
+                <li>Constructed a secure private administration gateway featuring customized request authentication checkpoints.</li>
             </ul>
         </div>
 
-        <!-- Project 2 -->
-        <div class="project-card">
-            <h3>Small Business Operations & Inventory Tracker <span class="tech-stack">Java • OOP • File I/O</span></h3>
+        <!-- Project 2: the inventory tracker. -->
+        <div
+            class="project-card"
+            role="button"
+            tabindex="0"
+            data-project-title="Small Business Operations &amp; Inventory Tracker"
+        >
+            <h3>
+                Small Business Operations &amp; Inventory Tracker
+                <span class="tech-stack">Java • OOP • File I/O</span>
+            </h3>
             <ul>
-                <li>Architecting an object-oriented desktop application engineered to monitor core business workflows, material margins, and labor matrices[cite: 7].</li>
-                <li>Utilizing structural encapsulation, polymorphism, and inheritance paradigms alongside file I/O operations for data integrity[cite: 7].</li>
+                <li>Architecting an object-oriented desktop application engineered to monitor core business workflows, material margins, and labor matrices.</li>
+                <li>Utilizing structural encapsulation, polymorphism, and inheritance paradigms alongside file I/O operations for data integrity.</li>
             </ul>
         </div>
 
-        <!-- Project 3 -->
-        <div class="project-card">
-            <h3>Programmatic Matrix & Linear Algebra Solver <span class="tech-stack">Python • Data Structures</span></h3>
+        <!-- Project 3: the matrix and algebra solver. -->
+        <div
+            class="project-card"
+            role="button"
+            tabindex="0"
+            data-project-title="Programmatic Matrix &amp; Linear Algebra Solver"
+        >
+            <h3>
+                Programmatic Matrix &amp; Linear Algebra Solver
+                <span class="tech-stack">Python • Data Structures</span>
+            </h3>
             <ul>
-                <li>Constructing a functional command-line engine to calculate system transformations, determinants, and linear equation systems[cite: 7].</li>
-                <li>Converting core Calculus and Discrete Mathematics theories into optimized data functions[cite: 7].</li>
+                <li>Constructing a functional command-line engine to calculate system transformations, determinants, and linear equation systems.</li>
+                <li>Converting core Calculus and Discrete Mathematics theories into optimized data functions.</li>
             </ul>
         </div>
 
-        <!-- Dynamic Proposal Section -->
+        <!-- Visitors can send a project idea to the backend through this form. -->
         <h2>Suggest a Project Extension</h2>
         <div class="form-section">
-            <form action="#" method="POST" class="form-group">
-                <input type="text" name="idea" placeholder="Enter project feature idea..." required>
+            <form id="idea-form" class="form-group">
+                <!-- The required field prevents an empty submission. -->
+                <input
+                    type="text"
+                    name="idea"
+                    aria-label="Project feature idea"
+                    placeholder="Enter project feature idea..."
+                    required
+                >
+
+                <!-- JavaScript temporarily disables this button during submission. -->
                 <button type="submit" class="submit-btn">Submit Idea</button>
             </form>
+
+            <!-- JavaScript writes submission updates here. -->
+            <p id="form-status" role="status" aria-live="polite"></p>
         </div>
 
+        <!-- The admin link expects a login.html file in this directory. -->
         <footer>
             <span>© 2026 German Antonelli</span>
             <a href="./login.html">Admin Dashboard Interface →</a>
         </footer>
+    </main>
+
+    <!-- Hidden modal that appears when someone opens a project card. -->
+    <div id="coming-soon-modal" class="modal-overlay" aria-hidden="true">
+        <div
+            class="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-project-title"
+            tabindex="-1"
+        >
+            <!-- Button used to close the modal. -->
+            <button id="close-modal-btn" class="close-button" aria-label="Close modal">
+                &times;
+            </button>
+
+            <!-- Decorative icon and project status. -->
+            <div class="spinner-icon" aria-hidden="true">🚀</div>
+            <h2 id="modal-project-title">Project Name</h2>
+            <p class="modal-status-badge">Development Phase</p>
+
+            <!-- Message displayed for every project. -->
+            <p>
+                I am currently polishing the code and fine-tuning the details
+                for this project. Check back soon for the live interactive demo!
+            </p>
+
+            <!-- Decorative progress bar; its percentage is set in the CSS. -->
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- PASTE YOUR API CONFIGURATION AND JAVASCRIPT HERE -->
     <script>
-        const API_BASE_URL = 'https://your-api-domain.com'; // Replace with your actual API backend URL
+        // Base URL of the backend that receives project ideas.
+        const API_BASE_URL = 'https://portfolio-j3hj.onrender.com';
 
-        // Example: If you are handling the form submission via JavaScript fetch/AJAX:
-        document.querySelector('.form-group').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = e.target.querySelector('input[name="idea"]').value;
+        // Save references to modal elements used by multiple functions.
+        const modal = document.getElementById('coming-soon-modal');
+        const modalTitle = document.getElementById('modal-project-title');
+        const closeBtn = document.getElementById('close-modal-btn');
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/ideas`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idea: input })
-                });
-                
-                if (response.ok) {
-                    alert('Idea submitted successfully!');
-                    e.target.reset();
+        // Remember which project card was selected so focus can return to it.
+        let previousFocus;
+
+        // Display the modal and insert the selected project's title.
+        function openModal(card) {
+            previousFocus = card;
+            modalTitle.textContent = card.dataset.projectTitle;
+            modal.classList.add('is-active');
+            modal.setAttribute('aria-hidden', 'false');
+            closeBtn.focus();
+        }
+
+        // Hide the modal and return keyboard focus to the project card.
+        function closeModal() {
+            modal.classList.remove('is-active');
+            modal.setAttribute('aria-hidden', 'true');
+            previousFocus?.focus();
+        }
+
+        // Set up mouse and keyboard activation for every project card.
+        document.querySelectorAll('.project-card').forEach(card => {
+            // Open the modal when the card is clicked.
+            card.addEventListener('click', () => openModal(card));
+
+            // Enter and Space also open the modal for keyboard users.
+            card.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openModal(card);
                 }
-            } catch (error) {
-                console.error('Error submitting idea:', error);
+            });
+        });
+
+        // Close the modal when its X button is clicked.
+        closeBtn.addEventListener('click', closeModal);
+
+        // Close the modal when the dark area outside its content is clicked.
+        modal.addEventListener('click', event => {
+            if (event.target === modal) {
+                closeModal();
             }
         });
-    </script>
 
+        // Support Escape to close and keep keyboard focus inside the modal.
+        document.addEventListener('keydown', event => {
+            // Ignore these keys while the modal is closed.
+            if (!modal.classList.contains('is-active')) return;
+
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+
+            // The close button is currently the modal's only focusable control.
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                closeBtn.focus();
+            }
+        });
+
+        // Handle the project idea form without reloading the page.
+        document.getElementById('idea-form').addEventListener(
+            'submit',
+            async event => {
+                // Stop the browser from submitting the form the traditional way.
+                event.preventDefault();
+
+                // Read the form, remove surrounding whitespace, and find the status area.
+                const form = event.currentTarget;
+                const idea = form.elements.idea.value.trim();
+                const status = document.getElementById('form-status');
+
+                // Do not send an empty or whitespace-only idea.
+                if (!idea) return;
+
+                // Prevent duplicate submissions while waiting for the backend.
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                status.textContent = 'Submitting idea...';
+
+                try {
+                    // Send the idea as JSON to the backend endpoint.
+                    const response = await fetch(`${API_BASE_URL}/api/ideas`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ idea })
+                    });
+
+                    // fetch() does not automatically throw for HTTP errors.
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    // Confirm success and clear the input only after acceptance.
+                    status.textContent = 'Idea submitted successfully!';
+                    form.reset();
+                } catch (error) {
+                    // Show a useful message if the server or connection fails.
+                    status.textContent =
+                        'Could not submit your idea. Please try again later.';
+                    console.error('Error submitting idea:', error);
+                } finally {
+                    // Allow another attempt whether the request succeeded or failed.
+                    submitButton.disabled = false;
+                }
+            }
+        );
+    </script>
 </body>
 </html>
