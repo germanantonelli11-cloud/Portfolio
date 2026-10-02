@@ -1,557 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <!-- Lets the page display letters and symbols correctly. -->
-    <meta charset="UTF-8">
-
-    <!-- Makes the layout fit phones, tablets, and desktop screens. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Text shown in the browser tab. -->
-    <title>German Antonelli | Portfolio</title>
-
-    <style>
-        /* Include padding and borders inside an element's declared width. */
-        * {
-            box-sizing: border-box;
-        }
-
-        /* Set the default font, colors, and spacing for the entire page. */
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            margin: 0;
-            padding: 40px 20px;
-        }
-
-        /* Center the page content and prevent it from getting too wide. */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        /* Style the main name heading. */
-        h1 {
-            color: #58a6ff;
-            font-size: 2.2rem;
-            margin-bottom: 8px;
-        }
-
-        /* Style the short description below the name. */
-        .subtitle {
-            color: #8b949e;
-            font-size: 1.1rem;
-            margin-bottom: 35px;
-        }
-
-        /* Style section headings such as "Featured Projects." */
-        h2 {
-            color: #f0f6fc;
-            border-bottom: 1px solid #30363d;
-            padding-bottom: 10px;
-            margin-top: 40px;
-        }
-
-        /* Give each project its card appearance and hover animation. */
-        .project-card {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition:
-                transform 0.2s ease,
-                border-color 0.2s ease,
-                background-color 0.2s ease;
-        }
-
-        /* Highlight a project when hovered over or selected with a keyboard. */
-        .project-card:hover,
-        .project-card:focus-visible {
-            transform: translateY(-2px);
-            border-color: #58a6ff;
-            background-color: #1f242c;
-        }
-
-        /* Place the project title and technology label on the same row. */
-        .project-card h3 {
-            margin-top: 0;
-            color: #f0f6fc;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-        }
-
-        /* Style the label showing which technologies a project uses. */
-        .tech-stack {
-            font-size: 0.85rem;
-            color: #58a6ff;
-            background-color: #1f242c;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: normal;
-        }
-
-        /* Format the lists inside project cards. */
-        .project-card ul {
-            margin: 10px 0 0;
-            padding-left: 20px;
-            color: #8b949e;
-        }
-
-        /* Add breathing room between project description items. */
-        .project-card li {
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        /* Give the idea submission form its own card. */
-        .form-section {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-
-        /* Put the text field and submit button next to each other. */
-        .form-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Style the field where visitors type an idea. */
-        input[type="text"] {
-            flex: 1;
-            min-width: 0;
-            padding: 10px;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: white;
-        }
-
-        /* Style the form's submit button. */
-        .submit-btn {
-            padding: 10px 20px;
-            background-color: #238636;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Change the button color when hovered over. */
-        .submit-btn:hover {
-            background-color: #2ea043;
-        }
-
-        /* Show that the button is unavailable while a request is running. */
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
-
-        /* Style the success or error message below the form. */
-        #form-status {
-            margin-bottom: 0;
-            color: #8b949e;
-            font-size: 0.9rem;
-        }
-
-        /* Arrange the copyright text and admin link in the footer. */
-        footer {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            color: #8b949e;
-            font-size: 0.9rem;
-        }
-
-        /* Set the color and remove underlines from links. */
-        a {
-            color: #58a6ff;
-            text-decoration: none;
-        }
-
-        /*
-         * The modal overlay covers the screen.
-         * It starts invisible and does not receive clicks until opened.
-         */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 9999;
-        }
-
-        /* JavaScript adds this class to show the modal. */
-        .modal-overlay.is-active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Style the box displayed in the middle of the modal. */
-        .modal-content {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            padding: 40px;
-            border-radius: 12px;
-            max-width: 450px;
-            width: 100%;
-            position: relative;
-            text-align: center;
-            color: #f0f6fc;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        /* Slide the box into place when the modal opens. */
-        .modal-overlay.is-active .modal-content {
-            transform: translateY(0);
-        }
-
-        /* Position and style the X button in the modal. */
-        .close-button {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #8b949e;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        /* Brighten the X button when hovered over. */
-        .close-button:hover {
-            color: #f0f6fc;
-        }
-
-        /* Animate the rocket icon in the modal. */
-        .spinner-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* Style the "Development Phase" label. */
-        .modal-status-badge {
-            display: inline-block;
-            background: #1f242c;
-            color: #58a6ff;
-            border: 1px solid #30363d;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin: 10px 0 20px;
-        }
-
-        /* Create the track behind the decorative progress bar. */
-        .progress-bar-container {
-            background: #0d1117;
-            height: 6px;
-            border-radius: 3px;
-            margin-top: 25px;
-            overflow: hidden;
-            border: 1px solid #30363d;
-        }
-
-        /* Fill 75% of the decorative progress bar. */
-        .progress-bar {
-            background: linear-gradient(90deg, #58a6ff, #bc8cff);
-            width: 75%;
-            height: 100%;
-        }
-
-        /* Move the rocket slightly up and down. */
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Stack elements vertically when the screen is narrow. */
-        @media (max-width: 600px) {
-            .project-card h3 {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .form-group {
-                flex-direction: column;
-            }
-        }
-
-        /* Respect a visitor's system setting to reduce animation. */
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Main content of the portfolio. -->
-    <main class="container">
-        <!-- Introduction shown at the top of the page. -->
-        <h1>Welcome to the German's Portfolio</h1>
-        <p class="subtitle">
-            Building real-world software engineering systems &amp; scalable web architectures.
-        </p>
-
-        <!-- Project cards open the coming-soon modal when clicked. -->
-        <h2>Featured Projects (Click to expand)</h2>
-
-        <!-- Project 1: its data-project-title becomes the modal title. -->
-        <div
-            class="project-card"
-            role="button"
-            tabindex="0"
-            data-project-title="Dynamic Full-Stack Web Architecture Portfolio"
-        >
-            <h3>
-                Dynamic Full-Stack Web Architecture Portfolio
-                <span class="tech-stack">Java • Spring Boot MVC • Thymeleaf</span>
-            </h3>
-            <ul>
-                <li>Engineered a live full-stack, enterprise-grade web application portfolio leveraging the Model-View-Controller (MVC) architectural pattern.</li>
-                <li>Architected an interactive content submission and verification portal mapping user-submitted assets dynamically.</li>
-                <li>Constructed a secure private administration gateway featuring customized request authentication checkpoints.</li>
-            </ul>
-        </div>
-
-        <!-- Project 2: the inventory tracker. -->
-        <div
-            class="project-card"
-            role="button"
-            tabindex="0"
-            data-project-title="Small Business Operations &amp; Inventory Tracker"
-        >
-            <h3>
-                Small Business Operations &amp; Inventory Tracker
-                <span class="tech-stack">Java • OOP • File I/O</span>
-            </h3>
-            <ul>
-                <li>Architecting an object-oriented desktop application engineered to monitor core business workflows, material margins, and labor matrices.</li>
-                <li>Utilizing structural encapsulation, polymorphism, and inheritance paradigms alongside file I/O operations for data integrity.</li>
-            </ul>
-        </div>
-
-        <!-- Project 3: the matrix and algebra solver. -->
-        <div
-            class="project-card"
-            role="button"
-            tabindex="0"
-            data-project-title="Programmatic Matrix &amp; Linear Algebra Solver"
-        >
-            <h3>
-                Programmatic Matrix &amp; Linear Algebra Solver
-                <span class="tech-stack">Python • Data Structures</span>
-            </h3>
-            <ul>
-                <li>Constructing a functional command-line engine to calculate system transformations, determinants, and linear equation systems.</li>
-                <li>Converting core Calculus and Discrete Mathematics theories into optimized data functions.</li>
-            </ul>
-        </div>
-
-        <!-- Visitors can send a project idea to the backend through this form. -->
-        <h2>Suggest a Project Extension</h2>
-        <div class="form-section">
-            <form id="idea-form" class="form-group">
-                <!-- The required field prevents an empty submission. -->
-                <input
-                    type="text"
-                    name="idea"
-                    aria-label="Project feature idea"
-                    placeholder="Enter project feature idea..."
-                    required
-                >
-
-                <!-- JavaScript temporarily disables this button during submission. -->
-                <button type="submit" class="submit-btn">Submit Idea</button>
-            </form>
-
-            <!-- JavaScript writes submission updates here. -->
-            <p id="form-status" role="status" aria-live="polite"></p>
-        </div>
-
-        <!-- The admin link expects a login.html file in this directory. -->
-        <footer>
-            <span>© 2026 German Antonelli</span>
-            <a href="./login.html">Admin Dashboard Interface →</a>
-        </footer>
-    </main>
-
-    <!-- Hidden modal that appears when someone opens a project card. -->
-    <div id="coming-soon-modal" class="modal-overlay" aria-hidden="true">
-        <div
-            class="modal-content"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-project-title"
-            tabindex="-1"
-        >
-            <!-- Button used to close the modal. -->
-            <button id="close-modal-btn" class="close-button" aria-label="Close modal">
-                &times;
-            </button>
-
-            <!-- Decorative icon and project status. -->
-            <div class="spinner-icon" aria-hidden="true">🚀</div>
-            <h2 id="modal-project-title">Project Name</h2>
-            <p class="modal-status-badge">Development Phase</p>
-
-            <!-- Message displayed for every project. -->
-            <p>
-                I am currently polishing the code and fine-tuning the details
-                for this project. Check back soon for the live interactive demo!
-            </p>
-
-            <!-- Decorative progress bar; its percentage is set in the CSS. -->
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="German Antonelli — computer science student building web applications and practical software tools. Explore projects, experience, and education.">
+    <meta name="theme-color" content="#f7f7f3">
+    <title>
+      German Antonelli | Software Engineering Portfolio
+    </title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <a href="#main" class="skip">
+      Skip to content
+    </a>
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="#home" aria-label="German Antonelli home">
+          german
+          <span class="blue">
+            .
+          </span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="#home" data-page="home">
+            Home
+          </a>
+          <a href="#projects" data-page="projects">
+            Projects
+          </a>
+          <a href="#about" data-page="about">
+            About
+          </a>
+          <a href="#contact" data-page="contact">
+            Contact
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="wrap" tabindex="-1">
+      <section id="home" class="view" aria-label="Home">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">
+              Software engineering portfolio
             </div>
+            <h1>
+              Hi, I’m German.
+              <br>
+              I build ideas into
+              <br>
+              <span class="blue">
+                working software.
+              </span>
+            </h1>
+            <p>
+              Exploring full-stack development, useful tools, and the systems behind them.
+            </p>
+            <div class="actions">
+              <a href="#projects" class="btn primary">
+                Explore my work
+                <span aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+              <a href="./resume.pdf" class="btn" download>
+                Download resume
+                <span aria-hidden="true">
+                  ↓
+                </span>
+              </a>
+            </div>
+            <div class="availability">
+              <span class="dot green">
+              </span>
+              Computer science student · Seeking Summer 2027 internships
+            </div>
+          </div>
+          <div class="hero-art">
+            <div class="window">
+              <div class="window-bar">
+                <span class="traffic">
+                </span>
+                <span class="traffic">
+                </span>
+                <span class="traffic">
+                </span>
+                <span class="window-label">
+                  IDEAS → CODE → REAL SOLUTIONS
+                </span>
+              </div>
+              <div class="architecture">
+                <pre class="code">
+                  <span class="comment">
+                    // A small idea. A working feature.
+                  </span>
+                  <span class="yellow">
+                    @RestController
+                  </span>
+                  <span class="pink">
+                    public class
+                  </span>
+                  <span class="cyan">
+                    HomeController
+                  </span>
+                  {
+                  <span class="yellow">
+                    @GetMapping
+                  </span>
+                  (
+                  <span class="cyan">
+                    "/api/projects"
+                  </span>
+                  )
+                  <span class="pink">
+                    public
+                  </span>
+                  List&lt;ProjectItem&gt;
+                  <span class="yellow">
+                    getPublicProjects
+                  </span>
+                  () {
+                  <span class="pink">
+                    return
+                  </span>
+                  approvedProjects;
+  }
+}
+                  <span class="comment">
+                    // Turning ideas into software,
+// one commit at a time.
+                  </span>
+                </pre>
+                <div class="flow">
+                  <div class="flow-node">
+                    <span class="flow-icon" aria-hidden="true">
+                      ◎
+                    </span>
+                    <div>
+                      <strong>
+                        Browser
+                      </strong>
+                      <small>
+                        Sends a request
+                      </small>
+                    </div>
+                  </div>
+                  <div class="flow-arrow" aria-hidden="true">
+                    ↓
+                  </div>
+                  <div class="flow-node">
+                    <span class="flow-icon" aria-hidden="true">
+                      ⚙
+                    </span>
+                    <div>
+                      <strong>
+                        Spring Boot API
+                      </strong>
+                      <small>
+                        Handles logic and data
+                      </small>
+                    </div>
+                  </div>
+                  <div class="flow-arrow" aria-hidden="true">
+                    ↓
+                  </div>
+                  <div class="flow-node">
+                    <span class="flow-icon" aria-hidden="true">
+                      ▤
+                    </span>
+                    <div>
+                      <strong>
+                        Interface
+                      </strong>
+                      <small>
+                        Displays the response
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
-
-    <script>
-        // Base URL of the backend that receives project ideas.
-        const API_BASE_URL = 'https://portfolio-j3hj.onrender.com';
-
-        // Save references to modal elements used by multiple functions.
-        const modal = document.getElementById('coming-soon-modal');
-        const modalTitle = document.getElementById('modal-project-title');
-        const closeBtn = document.getElementById('close-modal-btn');
-
-        // Remember which project card was selected so focus can return to it.
-        let previousFocus;
-
-        // Display the modal and insert the selected project's title.
-        function openModal(card) {
-            previousFocus = card;
-            modalTitle.textContent = card.dataset.projectTitle;
-            modal.classList.add('is-active');
-            modal.setAttribute('aria-hidden', 'false');
-            closeBtn.focus();
-        }
-
-        // Hide the modal and return keyboard focus to the project card.
-        function closeModal() {
-            modal.classList.remove('is-active');
-            modal.setAttribute('aria-hidden', 'true');
-            previousFocus?.focus();
-        }
-
-        // Set up mouse and keyboard activation for every project card.
-        document.querySelectorAll('.project-card').forEach(card => {
-            // Open the modal when the card is clicked.
-            card.addEventListener('click', () => openModal(card));
-
-            // Enter and Space also open the modal for keyboard users.
-            card.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openModal(card);
-                }
-            });
-        });
-
-        // Close the modal when its X button is clicked.
-        closeBtn.addEventListener('click', closeModal);
-
-        // Close the modal when the dark area outside its content is clicked.
-        modal.addEventListener('click', event => {
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-
-        // Support Escape to close and keep keyboard focus inside the modal.
-        document.addEventListener('keydown', event => {
-            // Ignore these keys while the modal is closed.
-            if (!modal.classList.contains('is-active')) return;
-
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-
-            // The close button is currently the modal's only focusable control.
-            if (event.key === 'Tab') {
-                event.preventDefault();
-                closeBtn.focus();
-            }
-        });
-
-        // Handle the project idea form without reloading the page.
-        document.getElementById('idea-form').addEventListener(
-            'submit',
-            async event => {
-                // Stop the browser from submitting the form the traditional way.
-                event.preventDefault();
-
-                // Read the form, remove surrounding whitespace, and find the status area.
-                const form = event.currentTarget;
-                const idea = form.elements.idea.value.trim();
-                const status = document.getElementById('form-status');
-
-                // Do not send an empty or whitespace-only idea.
-                if (!idea) return;
-
-                // Prevent duplicate submissions while waiting for the backend.
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                status.textContent = 'Submitting idea...';
-
-                try {
-                    // Send the idea as JSON to the backend endpoint.
-                    const response = await fetch(`${API_BASE_URL}/api/add-project`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ projectName: idea })
-                    });
-
-                    // fetch() does not automatically throw for HTTP errors.
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-
-                    // Confirm success and clear the input only after acceptance.
-                    status.textContent = 'Idea submitted successfully!';
-                    form.reset();
-                } catch (error) {
-                    // Show a useful message if the server or connection fails.
-                    status.textContent =
-                        'Could not submit your idea. Please try again later.';
-                    console.error('Error submitting idea:', error);
-                } finally {
-                    // Allow another attempt whether the request succeeded or failed.
-                    submitButton.disabled = false;
-                }
-            }
-        );
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">
+                Selected work
+              </div>
+              <h2>
+                A few things I’m building.
+              </h2>
+            </div>
+            <p>
+              Different problems. A common curiosity.
+            </p>
+          </div>
+          <div class="cards" id="home-projects">
+          </div>
+          <div class="actions">
+            <a href="#projects" class="text-link">
+              See all four projects ↗
+            </a>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">
+                Background
+              </div>
+              <h2>
+                Learning to build. Built to lead.
+              </h2>
+            </div>
+            <a href="#about" class="text-link">
+              More about me ↗
+            </a>
+          </div>
+          <div class="resume-grid">
+            <div>
+              <h3>
+                Education
+              </h3>
+              <div class="entry">
+                <strong>
+                  Evergreen Valley College
+                </strong>
+                <p>
+                  A.S. in Computer Science · GPA 3.48
+                </p>
+                <div class="meta">
+                  EXPECTED GRADUATION · SPRING 2028
+                </div>
+              </div>
+              <div class="entry">
+                <strong>
+                  San José State University
+                </strong>
+                <p>
+                  Planned transfer · B.S. in Computer Science
+                </p>
+                <div class="meta">
+                  TRANSFER · SPRING 2028
+                  <br>
+                  EXPECTED GRADUATION · FALL 2029
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3>
+                Experience
+              </h3>
+              <div class="entry">
+                <strong>
+                  Site Supervisor · ODR Roofing
+                </strong>
+                <p>
+                  Coordinated crews, materials, schedules, and client expectations across construction projects.
+                </p>
+                <div class="meta">
+                  SAN JOSE, CA · 2022–2025
+                </div>
+              </div>
+              <div class="entry">
+                <strong>
+                  Kiosk Manager · Wireless Advocates
+                </strong>
+                <p>
+                  Led recruiting, onboarding, inventory tracking, and daily retail operations.
+                </p>
+                <div class="meta">
+                  SAN JOSE, CA · 2020–2022
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="skill-groups">
+            <div>
+              <h3>
+                Languages
+              </h3>
+              <p>
+                Java · C · Python · JavaScript
+                <br>
+                HTML5 · CSS3
+              </p>
+            </div>
+            <div>
+              <h3>
+                Development
+              </h3>
+              <p>
+                Spring Boot · REST APIs · JSON
+                <br>
+                OOP · Data structures · File I/O
+              </p>
+            </div>
+            <div>
+              <h3>
+                Tools & deployment
+              </h3>
+              <p>
+                Git · GitHub · Codespaces · Docker
+                <br>
+                Vercel · Render · curl
+              </p>
+            </div>
+          </div>
+        </section>
+      </section>
+      <section id="projects" class="view" hidden aria-label="Projects">
+        <div class="page-intro">
+          <div class="eyebrow">
+            The portfolio
+          </div>
+          <h1>
+            Built to solve.
+            <span class="blue">
+              Made to learn.
+            </span>
+          </h1>
+          <p>
+            A closer look at the projects I’m building and the thinking behind them. Open a project to explore its details and interactive preview.
+          </p>
+        </div>
+        <div class="project-list" id="project-list">
+        </div>
+      </section>
+      <section id="about" class="view" hidden aria-label="About">
+        <div class="page-intro">
+          <div class="eyebrow">
+            A little context
+          </div>
+          <h1>
+            Curiosity,
+            <span class="blue">
+              with follow-through.
+            </span>
+          </h1>
+          <p>
+            I’m German Antonelli, a computer science student in San Jose working toward a career in software engineering. I like breaking problems into smaller pieces, understanding why a solution works, and turning ideas into things people can use.
+          </p>
+        </div>
+        <div class="resume-grid section">
+          <div>
+            <h3>
+              From operations to software
+            </h3>
+            <div class="entry">
+              <strong>
+                Building on practical experience
+              </strong>
+              <p>
+                Leading construction crews and managing a retail team taught me to coordinate people, keep track of details, and solve problems under changing conditions. Those experiences now inform the tools I’m building.
+              </p>
+            </div>
+            <div class="entry">
+              <strong>
+                Learning through real projects
+              </strong>
+              <p>
+                My portfolio connects a static frontend to a Spring Boot API. Working through routing, cross-origin requests, deployment, and admin authentication gave me a clearer understanding of how the pieces fit together.
+              </p>
+            </div>
+          </div>
+          <div>
+            <h3>
+              Education & direction
+            </h3>
+            <div class="entry">
+              <strong>
+                Evergreen Valley College
+              </strong>
+              <p>
+                A.S. in Computer Science · GPA 3.48
+              </p>
+              <div class="meta">
+                EXPECTED GRADUATION · SPRING 2028
+              </div>
+              <p>
+                Coursework: Java, C, Python, calculus, discrete mathematics, and engineering.
+              </p>
+            </div>
+            <div class="entry">
+              <strong>
+                San José State University
+              </strong>
+              <p>
+                Planned transfer in Spring 2028.
+                <br>
+                B.S. in Computer Science, expected Fall 2029.
+              </p>
+            </div>
+            <a class="btn primary" href="./resume.pdf" download>
+              Download my resume ↓
+            </a>
+          </div>
+        </div>
+      </section>
+      <section id="contact" class="view" hidden aria-label="Contact">
+        <div class="page-intro">
+          <div class="eyebrow">
+            Let’s connect
+          </div>
+          <h1>
+            Have something
+            <span class="blue">
+              in mind?
+            </span>
+          </h1>
+          <p>
+            Internships, project ideas, or a conversation about building useful software—I’d love to hear from you.
+          </p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <h2>
+              Start a conversation.
+            </h2>
+            <p>
+              Send an email or find me on GitHub and LinkedIn.
+            </p>
+            <p>
+              <a class="text-link" href="mailto:german.antonelli11@gmail.com">
+                german.antonelli11@gmail.com ↗
+              </a>
+            </p>
+            <div class="actions">
+              <a class="btn" href="https://github.com/germanantonelli11-cloud" target="_blank" rel="noopener noreferrer">
+                GitHub ↗
+              </a>
+              <a class="btn" href="https://www.linkedin.com/in/german-antonelli-46483816a" target="_blank" rel="noopener noreferrer">
+                LinkedIn ↗
+              </a>
+            </div>
+          </div>
+          <div class="contact-card">
+            <h2>
+              Suggest a project idea.
+            </h2>
+            <p>
+              Your idea will be sent to my backend for review.
+            </p>
+            <form id="idea-form">
+              <label for="idea">
+                Project or feature idea
+              </label>
+              <input class="field" id="idea" name="idea" maxlength="500" placeholder="What would you like to see built?" required>
+              <button class="btn primary" type="submit">
+                Submit idea ↗
+              </button>
+              <p class="form-status" id="form-status" role="status" aria-live="polite">
+              </p>
+            </form>
+          </div>
+        </div>
+      </section>
+      <div class="bottom-cta">
+        <div>
+          <strong>
+            Have something in mind?
+          </strong>
+          <p>
+            I’d love to hear about it.
+          </p>
+        </div>
+        <a href="#contact" class="btn primary">
+          Let’s connect ↗
+        </a>
+      </div>
+    </main>
+    <footer>
+      <div class="wrap footer-inner">
+        <span>
+          © 2026 German Antonelli · Built with curiosity.
+        </span>
+        <div class="footer-links">
+          <a href="https://github.com/germanantonelli11-cloud" target="_blank" rel="noopener noreferrer">
+            GitHub ↗
+          </a>
+          <a href="./resume.pdf" download>
+            Resume ↓
+          </a>
+          <a href="./login.html">
+            Admin sign-in ↗
+          </a>
+        </div>
+      </div>
+    </footer>
+    <dialog id="project-modal" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <div class="eyebrow" id="modal-number">
+        </div>
+        <button class="close" id="close-modal" aria-label="Close project">
+          ×
+        </button>
+        <h2 id="modal-title">
+        </h2>
+        <p id="modal-subtitle">
+        </p>
+        <div class="tags" id="modal-tags">
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="demo" id="demo">
+        </div>
+        <div class="details" id="modal-details">
+        </div>
+      </div>
+    </dialog>
+    <noscript>
+      <p class="wrap">
+        Enable JavaScript to switch pages and use the project demos. Contact German at
+        <a href="mailto:german.antonelli11@gmail.com">
+          german.antonelli11@gmail.com
+        </a>
+        .
+      </p>
+    </noscript>
+    <script src="./script.js" defer>
     </script>
-</body>
+  </body>
 </html>
