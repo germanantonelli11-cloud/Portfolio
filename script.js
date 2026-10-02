@@ -1,30 +1,187 @@
 'use strict';
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Select all project summary rows that act as triggers
-    const accordionRows = document.querySelectorAll('.project-summary-row');
-
-    accordionRows.forEach(row => {
-        row.addEventListener('click', () => {
-            const currentItem = row.parentElement;
-            const toggleIcon = row.querySelector('.toggle-icon');
-
-            // 1. Auto-collapse behavior: close all other items first
-            document.querySelectorAll('.project-accordion-item').forEach(item => {
-                if (item !== currentItem) {
-                    item.classList.remove('is-open');
-                    const otherIcon = item.querySelector('.toggle-icon');
-                    if (otherIcon) otherIcon.textContent = '+';
-                }
-            });
-
-            // 2. Toggle the active class on the currently selected item
-            const isOpen = currentItem.classList.toggle('is-open');
-
-            // 3. Smoothly change the tracking icon between + and −
-            if (toggleIcon) {
-                toggleIcon.textContent = isOpen ? '−' : '+';
-            }
-        });
+// Only the suggestion form connects to the existing backend. The project demos
+// are browser-based illustrations of the work in progress, not finished apps.
+const API_BASE_URL = 'https://portfolio-j3hj.onrender.com';
+// Escaped symbols keep the preview text readable even if a deployment changes encoding.
+const UI = Object.freeze( {
+  arrow: '\u2197',
+  bullet: '\u00b7',
+  nbsp: '\u00a0',
+  right: '\u2192'
+});
+const projects = [
+ {
+  id:'portfolio',title:'Full-stack web portfolio',short:'Full-stack portfolio',subtitle:'A deployed portfolio with a Spring Boot API.',description:'A responsive public website, project suggestions, and a private admin workflow.',tags:['Java','Spring Boot','JavaScript','Docker'],status:'Live',idea:'Build a place to share my work and accept project ideas, with a private workflow for reviewing submissions.',approach:'Deploy the frontend on Vercel and the Spring Boot backend on Render. Send JSON requests from the browser and protect admin actions with expiring bearer tokens.',learning:'API routes, CORS configuration, environment variables, and authentication. Project submissions and admin login have passed live tests.',url:'https://github.com/germanantonelli11-cloud/Portfolio',link:'View source'
+},
+ {
+  id:'inventory',title:'Business inventory tracker',short:'Inventory tracker',subtitle:'Organizing inventory, materials, and everyday operations.',description:'A Java application for tracking inventory, material costs, and labor records.',tags:['Java','OOP','File I/O'],status:`In development ${UI.bullet} Target Dec 2026`,idea:'Bring inventory, material costs, labor schedules, and transactions into one place for a small business.',approach:'Model the business with Java objects and store records using file I/O. The browser preview below explores the inventory interaction.',learning:'Object-oriented design, encapsulation, and reliable data handling.'
+},
+ {
+  id:'matrix',title:'Matrix & linear algebra solver',short:'Matrix solver',subtitle:'Turning mathematical concepts into useful Python tools.',description:'A Python command-line tool for matrix operations and linear equation systems.',tags:['Python','Data Structures','Linear Algebra'],status:`In development ${UI.bullet} Target Jan 2027`,idea:'Translate concepts from mathematics coursework into a tool for exploring matrices and solving linear equations.',approach:'Build a Python command-line tool for determinants, transformations, and systems. This browser preview demonstrates a two-variable system.',learning:'Matrix operations, numerical calculations, and recognizing systems without a unique solution.'
+},
+ {
+  id:'resources',title:'System resource allocation simulator',short:'Resource simulator',subtitle:'Exploring resource limits and bottlenecks.',description:'A C simulator for resource allocation using sequential updates and conditional logic.',tags:['C','Simulation','Computer Systems'],status:`In development ${UI.bullet} Target Mar 2027`,idea:'Make resource constraints visible and explore what happens when several tasks compete for a limited capacity.',approach:'Build a command-line simulation in C using sequential updates and conditional logic. This browser preview illustrates demand compared with capacity.',learning:'Resource allocation, bottlenecks, and clear state updates.'
+}
+];
+const miniTable = '<table class="mini-table"><thead><tr><th>Name</th><th>Category</th><th>Qty</th></tr></thead><tbody><tr><td>Laptop</td><td>Electronics</td><td>5</td></tr><tr><td>Keyboard</td><td>Electronics</td><td>12</td></tr><tr><td>Office chair</td><td>Furniture</td><td>8</td></tr><tr><td>Notebook</td><td>Supplies</td><td>50</td></tr><tr><td>Monitor</td><td>Electronics</td><td>6</td></tr></tbody></table>';
+function preview(id) {
+  if(id==='portfolio')return '<div class="mini-nav"><strong>german<span class="blue">.</span></strong><span>Home'+UI.nbsp.repeat(2)+'Projects'+UI.nbsp.repeat(2)+'About</span></div><div class="mini-home"><div><h4>Build.<br>Learn.<br>Create.</h4><small>A software engineering portfolio, built one feature at a time.</small><span class="mini-pill">Explore projects '+UI.arrow+'</span></div><div class="mini-shape"></div></div>';
+  if(id==='inventory')return '<div class="mini-inventory"><div class="mini-side"><b>Inventory Tracker</b><span>Items</span><span>Add item</span><span>Categories</span><span>File storage</span></div><div class="mini-main"><h4>Inventory <span class="blue">+</span></h4><div class="mini-search">Search items...</div>'+miniTable+'</div></div>';
+  if(id==='matrix')return '<div class="terminal"><div class="window-bar"><span class="traffic"></span><span class="traffic"></span><span class="traffic"></span><span class="window-label">python solver.py</span></div><pre><span class="comment">Matrix A:</span>\n[ 2  1 ]\n[ 1 -1 ]\n\n<span class="comment">Vector b:</span> [ 5  1 ]\n\n<span class="cyan">Solution (x):</span>\nx1 = 2.0000\nx2 = 1.0000\n<span class="cyan">&gt; </span></pre></div>';
+  return '<div class="mini-resources"><h4>Resource allocation</h4><div class="resource-line">Task A '+UI.bullet+' 35%<div class="meter"><span style="width:35%"></span></div></div><div class="resource-line">Task B '+UI.bullet+' 45%<div class="meter"><span style="width:45%"></span></div></div><div class="resource-line">Available '+UI.bullet+' 20%<div class="meter"><span style="width:20%;background:#62c7a7"></span></div></div></div>';
+}
+const tagHTML=p=>p.tags.map(t=>'<span class="tag">'+t+'</span>').join('');
+document.getElementById('home-projects').innerHTML=projects.slice(0,3).map((p,i)=>'<button class="project-card" data-project="'+p.id+'" aria-haspopup="dialog" aria-label="Open '+p.title+'"><div class="preview" aria-hidden="true">'+preview(p.id)+'</div><div class="card-body"><div class="card-title"><span><span class="number">0'+(i+1)+' /</span>'+p.short+'</span><span aria-hidden="true">'+UI.arrow+'</span></div><p>'+p.description+'</p><div class="stack">'+p.tags.join(' / ')+'</div><div class="status"><span class="dot '+(p.status==='Live'?'green':'')+'"></span>'+p.status+'</div></div></button>').join('');
+document.getElementById('project-list').innerHTML=projects.map((p,i)=>'<button class="project-row" data-project="'+p.id+'" aria-haspopup="dialog" aria-label="Open '+p.title+'"><div class="preview" aria-hidden="true">'+preview(p.id)+'</div><div><div class="project-number">0'+(i+1)+' /</div><h2>'+p.title+'</h2><p>'+p.subtitle+'</p><div class="tags">'+tagHTML(p)+'</div><div class="status"><span class="dot '+(p.status==='Live'?'green':'')+'"></span>'+p.status+'</div></div><div class="row-cta"><span class="plus" aria-hidden="true">+</span>View project '+UI.arrow+'</div></button>').join('');
+function route() {
+  const requested=location.hash.slice(1);
+  const page=['home','projects','about','contact'].includes(requested)?requested:'home';
+  document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==page);
+  document.querySelectorAll('nav a').forEach(a=> {
+    if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')
+  });
+  document.title=(page==='home'?'German Antonelli':page[0].toUpperCase()+page.slice(1)+' | German Antonelli')+' â Portfolio';
+  window.scrollTo(0,0)
+}
+window.addEventListener('hashchange',()=> {
+  route();document.getElementById('main').focus( {
+    preventScroll:true
+  })
+});
+route();
+const modal=document.getElementById('project-modal');
+let opener=null;
+document.querySelectorAll('[data-project]').forEach(button=>button.addEventListener('click',()=>openProject(button.dataset.project,button)));
+function openProject(id,button) {
+  const p=projects.find(p=>p.id===id);
+  opener=button;
+  document.getElementById('modal-number').textContent='PROJECT 0'+(projects.indexOf(p)+1);
+  document.getElementById('modal-title').textContent=p.title;
+  document.getElementById('modal-subtitle').textContent=p.subtitle;
+  document.getElementById('modal-tags').innerHTML=tagHTML(p);
+  const details=document.getElementById('modal-details');
+  details.innerHTML='<h3>The idea</h3><p>'+p.idea+'</p><h3>The approach</h3><p>'+p.approach+'</p><h3>What Iâm exploring</h3><p>'+p.learning+'</p><div class="status"><span class="dot '+(p.status==='Live'?'green':'')+'"></span>'+p.status+'</div>'+(p.url?'<div class="actions"><a class="btn" href="'+p.url+'" target="_blank" rel="noopener noreferrer">'+p.link+' â</a></div>':'');
+  renderDemo(id);
+  modal.showModal();
+  document.body.classList.add('no-scroll');
+  document.getElementById('close-modal').focus()
+}
+document.getElementById('close-modal').addEventListener('click',()=>modal.close());
+modal.addEventListener('close',()=> {
+  document.body.classList.remove('no-scroll');opener?.focus()
+});
+modal.addEventListener('click',event=> {
+  if(event.target===modal) {
+    const r=modal.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)modal.close()
+  }
+});
+// The native dialog handles Escape, modal focus containment, and keyboard access.
+function demoShell(title,content,caption) {
+  return '<div class="demo-head"><span>'+title+'</span><span>INTERACTIVE PREVIEW</span></div><div class="demo-content">'+content+'</div><div class="demo-caption">'+caption+'</div>'
+}
+function renderDemo(id) {
+  const demo=document.getElementById('demo');
+  if(id==='portfolio') {
+    demo.innerHTML=demoShell('From request to response','<h3>How the pieces connect</h3><div class="flow-demo"><button type="button" data-step="0" aria-pressed="true">01ãBrowser â JSON request</button><button type="button" data-step="1" aria-pressed="false">02ãSpring Boot â API handler</button><button type="button" data-step="2" aria-pressed="false">03ãResponse â Interface update</button></div><p class="flow-description" id="flow-description" role="status"></p>','Architecture illustration. Select a step to explore the request flow.');
+    const descriptions=['The frontend sends a projectName value as JSON to POST /api/add-project on the Render backend.','Spring Boot checks the submitted name and creates a pending project. Admin review requests require authorization.','The browser checks the HTTP response. On success it clears the input and displays confirmation; errors keep the idea available to retry.'];
+    const buttons=demo.querySelectorAll('[data-step]');
+    function step(i) {
+      buttons.forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===i)));
+      document.getElementById('flow-description').textContent=descriptions[i]
+    }
+    buttons.forEach(b=>b.addEventListener('click',()=>step(+b.dataset.step)));
+    step(0);
+  }
+  else if(id==='inventory') {
+    demo.innerHTML=demoShell('Inventory tracker','<h3>Inventory</h3><label for="inventory-search">Search items</label><input id="inventory-search" class="field" placeholder="Try âkeyboardââ¦"><div class="table-scroll"><table class="inventory-table"><thead><tr><th>Item</th><th>Quantity</th><th>Action</th></tr></thead><tbody id="inventory-items"></tbody></table></div><p id="inventory-count" class="demo-hint" role="status"></p><form id="add-item" class="add-form"><div><label for="item-name">New item</label><input id="item-name" class="field" required maxlength="60" placeholder="Item name"></div><div><label for="item-qty">Quantity</label><input id="item-qty" class="field" type="number" min="1" max="999999" step="1" value="1" required></div><button class="btn primary small" type="submit">+ Add item</button></form>','Browser concept demo. Changes last only while this project is open; the Java application is in development.');
+    let items=[ {
+      name:'Laptop',qty:5
+    }, {
+      name:'Keyboard',qty:12
+    }, {
+      name:'Office chair',qty:8
+    }, {
+      name:'Notebook',qty:50
+    }, {
+      name:'Monitor',qty:6
+    }];
+    function draw() {
+      const query=document.getElementById('inventory-search').value.toLowerCase();
+      const body=document.getElementById('inventory-items');
+      body.replaceChildren();
+      items.forEach((item,i)=> {
+        if(!item.name.toLowerCase().includes(query))return;const tr=document.createElement('tr');const name=document.createElement('td');name.textContent=item.name;const qty=document.createElement('td');qty.textContent=item.qty;const action=document.createElement('td');const remove=document.createElement('button');remove.className='delete-item';remove.type='button';remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+item.name);remove.addEventListener('click',()=> {
+          items.splice(i,1);draw()
+        });action.append(remove);tr.append(name,qty,action);body.append(tr)
+      });
+      document.getElementById('inventory-count').textContent=body.children.length+' of '+items.length+' items shown'
+    }
+    document.getElementById('inventory-search').addEventListener('input',draw);
+    document.getElementById('add-item').addEventListener('submit',event=> {
+      event.preventDefault();const name=document.getElementById('item-name').value.trim();const qty=Number(document.getElementById('item-qty').value);if(!name||!Number.isInteger(qty)||qty<1||qty>999999)return;items.push( {
+        name,qty
+      });event.currentTarget.reset();draw()
     });
+    draw();
+  }
+  else if(id==='matrix') {
+    demo.innerHTML=demoShell('Matrix solver','<h3>Solve a linear system</h3><p class="demo-hint">Enter the coefficients for A Â· x = b.</p><form id="matrix-form"><div class="matrix-inputs"><div class="matrix-grid"><input id="a" type="number" step="any" value="2" required aria-label="Row 1 coefficient of x"><input id="b" type="number" step="any" value="1" required aria-label="Row 1 coefficient of y"><input id="c" type="number" step="any" value="1" required aria-label="Row 2 coefficient of x"><input id="d" type="number" step="any" value="-1" required aria-label="Row 2 coefficient of y"></div><span aria-hidden="true">=</span><div class="matrix-vector"><input id="e" type="number" step="any" value="5" required aria-label="Row 1 result"><input id="f" type="number" step="any" value="1" required aria-label="Row 2 result"></div></div><button class="btn primary small" type="submit">Solve system â</button></form><div class="matrix-result" id="matrix-result" role="status" aria-live="polite"></div>','Browser demo of a 2 Ã 2 solver. The Python command-line project is in development.');
+    function solve() {
+      const [a,b,c,d,e,f]=['a','b','c','d','e','f'].map(id=>Number(document.getElementById(id).value));
+      const result=document.getElementById('matrix-result');
+      const det=a*d-b*c;
+      const scale=Math.max(Math.abs(a*d),Math.abs(b*c),Number.MIN_VALUE);
+      if(![a,b,c,d,e,f,det].every(Number.isFinite)) {
+        result.textContent='Use finite numbers within the supported numeric range.';
+        return
+      }
+      if(Math.abs(det)<=Number.EPSILON*16*scale) {
+        result.textContent='No stable unique solution. The coefficients are singular or nearly singular.';
+        return
+      }
+      const x=(e*d-b*f)/det,y=(a*f-e*c)/det;
+      if(!Number.isFinite(x)||!Number.isFinite(y)) {
+        result.textContent='The result exceeds the supported numeric range.';
+        return
+      }
+      result.textContent='x = '+x.toFixed(4)+' Â· y = '+y.toFixed(4)+'\nDeterminant = '+det.toFixed(4)
+    }
+    document.getElementById('matrix-form').addEventListener('submit',event=> {
+      event.preventDefault();solve()
+    });
+    solve();
+  }
+  else {
+    demo.innerHTML=demoShell('Resource allocation','<h3>When demand meets a limit</h3><p class="demo-hint">Total capacity: 100 units. Adjust each taskâs request.</p><div class="simulation-row"><label for="task-a">Task A: <output id="task-a-value">35</output> units</label><input id="task-a" type="range" min="0" max="100" value="35"><div class="meter"><span id="task-a-meter"></span></div></div><div class="simulation-row"><label for="task-b">Task B: <output id="task-b-value">45</output> units</label><input id="task-b" type="range" min="0" max="100" value="45"><div class="meter"><span id="task-b-meter"></span></div></div><div class="matrix-result" id="resource-result" role="status" aria-live="polite"></div>','Browser concept demo. The C command-line simulator is in development.');
+    function simulate() {
+      const a=+document.getElementById('task-a').value,b=+document.getElementById('task-b').value;
+      document.getElementById('task-a-value').value=a;
+      document.getElementById('task-b-value').value=b;
+      document.getElementById('task-a-meter').style.width=a+'%';
+      document.getElementById('task-b-meter').style.width=b+'%';
+      document.getElementById('resource-result').textContent=a+b>100?'Demand: '+(a+b)+' units. Bottleneck: '+(a+b-100)+' units over capacity.':'Demand: '+(a+b)+' units. Available capacity: '+(100-a-b)+' units.'
+    }
+    demo.querySelectorAll('input').forEach(input=>input.addEventListener('input',simulate));
+    simulate();
+  }
+}
+document.getElementById('idea-form').addEventListener('submit',async event=> {
+  event.preventDefault();const form=event.currentTarget;const idea=form.elements.idea.value.trim();const status=document.getElementById('form-status');if(!idea) {
+    status.textContent='Please enter a project idea.';return
+  }
+  const button=form.querySelector('button');button.disabled=true;status.textContent='Submitting your ideaâ¦ The backend may take a moment to wake up.';const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),90000);try {
+    const response=await fetch(API_BASE_URL+'/api/add-project', {
+      method:'POST',headers: {
+        'Content-Type':'application/json'
+      },body:JSON.stringify( {
+        projectName:idea
+      }),signal:controller.signal
+    });if(!response.ok)throw new Error('HTTP '+response.status);status.textContent='Thanks! Your idea has been submitted for review.';form.reset()
+  }
+  catch(error) {
+    status.textContent=error.name==='AbortError'?'The request timed out. Please try again.':'Could not submit your idea. Please try again or email me.'
+  }
+  finally {
+    clearTimeout(timer);button.disabled=false
+  }
 });
