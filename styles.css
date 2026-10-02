@@ -1027,3 +1027,263 @@ scroll-behavior:auto}
 animation:none!important;
 transition:none!important}
 }
+
+/* ==========================================================================
+   PROJECT ACCORDION & SPLIT GRID SYSTEM
+   ========================================================================== */
+
+.project-accordion {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2rem;
+    border-top: 1px solid var(--line);
+}
+
+.project-accordion-item {
+    border-bottom: 1px solid var(--line);
+    background-color: transparent;
+    transition: background-color 0.25s ease;
+}
+
+/* Hover style on rows to guide interaction */
+.project-accordion-item:hover {
+    background-color: rgba(21, 88, 238, 0.02);
+}
+
+/* The primary interactive header row */
+.project-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 1.5rem;
+    cursor: pointer;
+    gap: 2rem;
+    user-select: none;
+}
+
+.project-title-group {
+    flex: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.project-number {
+    font-family: var(--ui-mono, monospace);
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.project-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--ink);
+}
+
+.project-tagline {
+    font-size: 1rem;
+    color: var(--muted);
+    margin: 0;
+    flex-basis: 100%;
+}
+
+/* Horizontal pill tag alignments */
+.project-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-family: var(--ui-mono, monospace);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    color: var(--ink);
+    background-color: #ffffff;
+}
+
+/* Round interactive toggle buttons */
+.project-toggle-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--soft);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.project-accordion-item:hover .project-toggle-btn {
+    background-color: var(--blue);
+    color: #ffffff;
+}
+
+/* Expandable internal details panel core styles */
+.project-details-panel {
+    display: none;
+    padding: 0 1.5rem 2.5rem 1.5rem;
+    overflow: hidden;
+}
+
+/* Display block helper triggered cleanly by JavaScript */
+.project-accordion-item.is-open .project-details-panel {
+    display: block;
+}
+
+/* Highlight item layout container when opened */
+.project-accordion-item.is-open {
+    background-color: rgba(247, 247, 243, 0.6);
+}
+
+/* Two-column responsive split grid mapping the mockup images */
+.panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+@media (max-width: 868px) {
+    .panel-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Left-side interactive components placeholders styling */
+.panel-left-visual {
+    width: 100%;
+}
+
+.mockup-card {
+    background-color: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 12px);
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Dark mode theme variables applied directly to the Python solver module */
+.terminal-mockup {
+    background-color: var(--dark, #14202d);
+    color: #bbc9dc;
+    font-family: var(--ui-mono, monospace);
+    border: none;
+}
+
+.terminal-header {
+    color: #59627a;
+    border-bottom: 1px solid #1c2a3a;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+}
+
+.terminal-success {
+    color: #62c7a7;
+    margin-top: 1rem;
+}
+
+/* Right-side textual context alignment blocks */
+.panel-right-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin: 1.5rem 0 0.25rem 0;
+}
+
+.info-heading:first-of-type {
+    margin-top: 0;
+}
+
+.info-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0;
+}
+
+/* Form actions status metrics tracking links wrappers */
+.panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn-view-code {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-view-code:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+    background-color: var(--soft);
+}
+
+.status-indicator {
+    font-family: var(--ui-mono, monospace);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+.status-indicator.production::before { background-color: var(--blue); }
+.status-indicator.development::before { background-color: #f2cd60; }
+.status-indicator.completed::before { background-color: #62c7a7; }
+
+.accordion-footnote {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 1.5rem;
+}
