@@ -1702,3 +1702,97 @@ footer {
     padding: 4px;
   }
 }
+
+/* Inventory categories and three-variable matrix previews. */
+.terminal pre {
+  font-size: 9px;
+  line-height: 1.35;
+  padding: 12px 16px;
+}
+
+.mini-table {
+  width: 100%;
+  font-size: 7px;
+  table-layout: auto;
+}
+
+.mini-table th,
+.mini-table td {
+  padding: 5px 3px;
+}
+
+.mini-table th {
+  white-space: nowrap;
+}
+
+.inventory-table {
+  min-width: 480px;
+}
+
+.add-form {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.add-form > * {
+  min-width: 0;
+}
+
+.add-form button {
+  grid-column: 1 / -1;
+}
+
+.matrix-inputs {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.matrix-block {
+  min-width: 0;
+}
+
+.matrix-label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.matrix-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.matrix-vector {
+  gap: 8px;
+}
+
+.matrix-inputs input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 4px;
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .matrix-inputs {
+    gap: 10px;
+  }
+
+  .matrix-grid,
+  .matrix-vector {
+    gap: 5px;
+  }
+
+  .mini-table {
+    font-size: 7px;
+  }
+
+  .terminal pre {
+    font-size: 9px;
+    line-height: 1.35;
+  }
+}

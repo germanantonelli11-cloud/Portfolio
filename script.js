@@ -25,19 +25,19 @@ const projects = [
   },
   {
     "id": "inventory",
-    "title": "Business inventory tracker",
-    "short": "Inventory tracker",
-    "subtitle": "Organizing inventory, materials, and everyday operations.",
-    "description": "A Java application for tracking inventory, material costs, and labor records.",
+    "title": "Company inventory & job costing",
+    "short": "Inventory & job costing",
+    "subtitle": "Connecting company inventory with the cost of each job.",
+    "description": "A planned Java application connecting inventory, material usage, and job costs.",
     "tags": [
       "Java",
       "OOP",
       "File I/O"
     ],
     "status": "In development &#183; Target Dec 2026",
-    "idea": "Bring inventory, material costs, labor schedules, and transactions into one place for a small business.",
-    "approach": "Model the business with Java objects and store records using file I/O. The browser preview below explores the inventory interaction.",
-    "learning": "Object-oriented design, encapsulation, and reliable data handling."
+    "idea": "Bring company inventory and job costing into one place. The planned workflow assigns materials and labor to jobs, tracks stock, and compares actual costs with estimates.",
+    "approach": "Start with categorized inventory and storage locations, then add jobs, material usage, unit costs, and labor records. This browser demo currently covers inventory; job costing is planned.",
+    "learning": "Object-oriented design, inventory transactions, and calculating material and labor costs per job."
   },
   {
     "id": "matrix",
@@ -52,7 +52,7 @@ const projects = [
     ],
     "status": "In development &#183; Target Jan 2027",
     "idea": "Translate concepts from mathematics coursework into a tool for exploring matrices and solving linear equations.",
-    "approach": "Build a Python command-line tool for determinants, transformations, and systems. This browser preview demonstrates a two-variable system.",
+    "approach": "Build a Python command-line tool for determinants, transformations, and systems. This browser preview solves a three-variable system with pivoted Gaussian elimination.",
     "learning": "Matrix operations, numerical calculations, and recognizing systems without a unique solution."
   },
   {
@@ -74,11 +74,11 @@ const projects = [
 ];
 
 const initialInventory = [
-  { name: 'Laptop', category: 'Electronics', quantity: 5 },
-  { name: 'Keyboard', category: 'Electronics', quantity: 12 },
-  { name: 'Office chair', category: 'Furniture', quantity: 8 },
-  { name: 'Notebook', category: 'Supplies', quantity: 50 },
-  { name: 'Monitor', category: 'Electronics', quantity: 6 }
+  { name: 'Laptop', category: 'Electronics', quantity: 5, location: 'Office' },
+  { name: 'Keyboard', category: 'Electronics', quantity: 12, location: 'Storage' },
+  { name: 'Office chair', category: 'Furniture', quantity: 8, location: 'Office' },
+  { name: 'Notebook', category: 'Supplies', quantity: 50, location: 'Storage' },
+  { name: 'Monitor', category: 'Electronics', quantity: 6, location: 'Office' }
 ];
 
 function escapeHTML(value) {
@@ -134,6 +134,7 @@ function previewHTML(id) {
         <td>${escapeHTML(item.name)}</td>
         <td>${escapeHTML(item.category)}</td>
         <td>${item.quantity}</td>
+        <td>${escapeHTML(item.location)}</td>
       </tr>
     `).join('');
 
@@ -144,14 +145,14 @@ function previewHTML(id) {
           <span>Items</span>
           <span>Add item</span>
           <span>Categories</span>
-          <span>File storage</span>
+          <span>Import / Export</span>
         </div>
         <div class="mini-main">
           <h4>Inventory <span class="blue">+</span></h4>
           <div class="mini-search">Search items...</div>
           <table class="mini-table">
             <thead>
-              <tr><th>Name</th><th>Category</th><th>Qty</th></tr>
+              <tr><th>Name</th><th>Category</th><th>Qty</th><th>Location</th></tr>
             </thead>
             <tbody>${rows}</tbody>
           </table>
@@ -171,14 +172,16 @@ function previewHTML(id) {
           <span class="window-label">python solver.py</span>
         </div>
         <pre>Matrix A:
-[ 2  1 ]
-[ 1 -1 ]
+[ 2  1 -1 ]
+[ 0  3  2 ]
+[ 1 -1  1 ]
 
-Vector b: [ 5  1 ]
+Vector b: [ 0  3  6 ]
 
 Solution (x):
-x1 = 2.0000
-x2 = 1.0000
+x1 =  2.0000
+x2 = -1.0000
+x3 =  3.0000
 &gt; </pre>
       </div>
     `;
@@ -421,11 +424,13 @@ function renderInventoryDemo(demo) {
   demo.innerHTML = demoShell('Inventory tracker', `
     <h3>Inventory</h3>
     <label for="inventory-search">Search items</label>
-    <input id="inventory-search" class="field" placeholder="Try keyboard...">
+    <input id="inventory-search" class="field" placeholder="Search name, category, or location...">
     <div class="table-scroll">
       <table class="inventory-table">
         <thead>
-          <tr><th>Item</th><th>Quantity</th><th>Action</th></tr>
+          <tr>
+            <th>Item</th><th>Category</th><th>Quantity</th><th>Location</th><th>Action</th>
+          </tr>
         </thead>
         <tbody id="inventory-items"></tbody>
       </table>
@@ -435,6 +440,14 @@ function renderInventoryDemo(demo) {
       <div>
         <label for="item-name">New item</label>
         <input id="item-name" class="field" required maxlength="60" placeholder="Item name">
+      </div>
+      <div>
+        <label for="item-category">Category</label>
+        <input id="item-category" class="field" required maxlength="40" placeholder="Electronics">
+      </div>
+      <div>
+        <label for="item-location">Location</label>
+        <input id="item-location" class="field" required maxlength="40" placeholder="Office">
       </div>
       <div>
         <label for="item-qty">Quantity</label>
@@ -453,16 +466,21 @@ function renderInventoryDemo(demo) {
     body.replaceChildren();
 
     items.forEach((item, index) => {
-      if (!item.name.toLowerCase().includes(query)) {
+      const searchableText = `${item.name} ${item.category} ${item.location}`.toLowerCase();
+      if (!searchableText.includes(query)) {
         return;
       }
 
       const row = document.createElement('tr');
       const name = document.createElement('td');
+      const category = document.createElement('td');
+      const location = document.createElement('td');
       const quantity = document.createElement('td');
       const action = document.createElement('td');
       const remove = document.createElement('button');
       name.textContent = item.name;
+      category.textContent = item.category;
+      location.textContent = item.location;
       quantity.textContent = item.quantity;
       remove.type = 'button';
       remove.className = 'delete-item';
@@ -473,7 +491,7 @@ function renderInventoryDemo(demo) {
         draw();
       });
       action.append(remove);
-      row.append(name, quantity, action);
+      row.append(name, category, quantity, location, action);
       body.append(row);
     });
 
@@ -485,65 +503,137 @@ function renderInventoryDemo(demo) {
   demo.querySelector('#add-item').addEventListener('submit', (event) => {
     event.preventDefault();
     const name = demo.querySelector('#item-name').value.trim();
+    const category = demo.querySelector('#item-category').value.trim();
+    const location = demo.querySelector('#item-location').value.trim();
     const quantity = Number(demo.querySelector('#item-qty').value);
-    if (!name || !Number.isInteger(quantity) || quantity < 1 || quantity > 999999) {
+    if (!name || !category || !location || !Number.isInteger(quantity) || quantity < 1 || quantity > 999999) {
       return;
     }
-    items.push({ name, quantity });
+    items.push({ name, category, quantity, location });
     event.currentTarget.reset();
     draw();
   });
   draw();
 }
 
+// Solve A x = b using scaled partial pivoting and back substitution.
+// Inputs are copied so the user's original matrix remains unchanged.
+function solveLinearSystem(matrix, vector) {
+  const size = matrix.length;
+  const rows = matrix.map((row, index) => [...row, vector[index]]);
+  if (!rows.flat().every(Number.isFinite)) {
+    throw new Error('Enter finite numbers in every matrix field.');
+  }
+
+  const scales = matrix.map((row) => Math.max(...row.map(Math.abs)));
+  if (scales.some((scale) => scale === 0)) {
+    throw new Error('No unique solution: the matrix is singular.');
+  }
+
+  for (let column = 0; column < size; column += 1) {
+    let pivot = column;
+    for (let row = column + 1; row < size; row += 1) {
+      const candidateRatio = Math.abs(rows[row][column]) / scales[row];
+      const pivotRatio = Math.abs(rows[pivot][column]) / scales[pivot];
+      if (candidateRatio > pivotRatio) {
+        pivot = row;
+      }
+    }
+
+    if (Math.abs(rows[pivot][column]) / scales[pivot] <= Number.EPSILON * 32) {
+      throw new Error('No stable unique solution: the matrix is singular or nearly singular.');
+    }
+
+    [rows[column], rows[pivot]] = [rows[pivot], rows[column]];
+    [scales[column], scales[pivot]] = [scales[pivot], scales[column]];
+
+    for (let row = column + 1; row < size; row += 1) {
+      const factor = rows[row][column] / rows[column][column];
+      rows[row][column] = 0;
+      for (let entry = column + 1; entry <= size; entry += 1) {
+        rows[row][entry] -= factor * rows[column][entry];
+      }
+    }
+  }
+
+  const solution = Array(size).fill(0);
+  for (let row = size - 1; row >= 0; row -= 1) {
+    let value = rows[row][size];
+    for (let column = row + 1; column < size; column += 1) {
+      value -= rows[row][column] * solution[column];
+    }
+    solution[row] = value / rows[row][row];
+  }
+
+  if (!solution.every(Number.isFinite)) {
+    throw new Error('The result exceeds the supported numeric range.');
+  }
+  return solution;
+}
+
 function renderMatrixDemo(demo) {
+  const defaultMatrix = [[2, 1, -1], [0, 3, 2], [1, -1, 1]];
+  const defaultVector = [0, 3, 6];
+  const matrixInputs = defaultMatrix.map((row, rowIndex) =>
+    row.map((value, columnIndex) => `
+      <input
+        id="matrix-${rowIndex}-${columnIndex}"
+        type="number"
+        step="any"
+        value="${value}"
+        required
+        aria-label="Matrix row ${rowIndex + 1} column ${columnIndex + 1}"
+      >
+    `).join('')
+  ).join('');
+  const vectorInputs = defaultVector.map((value, index) => `
+    <input
+      id="vector-${index}"
+      type="number"
+      step="any"
+      value="${value}"
+      required
+      aria-label="Vector row ${index + 1}"
+    >
+  `).join('');
+
   demo.innerHTML = demoShell('Matrix solver', `
     <h3>Solve a linear system</h3>
-    <p class="demo-hint">Enter the coefficients for A x = b.</p>
+    <p class="demo-hint">Enter a 3 by 3 matrix A and vector b to solve A x = b.</p>
     <form id="matrix-form">
       <div class="matrix-inputs">
-        <div class="matrix-grid">
-          <input id="a" type="number" step="any" value="2" required aria-label="Row 1 coefficient of x">
-          <input id="b" type="number" step="any" value="1" required aria-label="Row 1 coefficient of y">
-          <input id="c" type="number" step="any" value="1" required aria-label="Row 2 coefficient of x">
-          <input id="d" type="number" step="any" value="-1" required aria-label="Row 2 coefficient of y">
+        <div class="matrix-block">
+          <div class="matrix-label">Matrix A</div>
+          <div class="matrix-grid">${matrixInputs}</div>
         </div>
-        <span aria-hidden="true">=</span>
-        <div class="matrix-vector">
-          <input id="e" type="number" step="any" value="5" required aria-label="Row 1 result">
-          <input id="f" type="number" step="any" value="1" required aria-label="Row 2 result">
+        <div class="matrix-block">
+          <div class="matrix-label">Vector b</div>
+          <div class="matrix-vector">${vectorInputs}</div>
         </div>
       </div>
       <button class="btn primary small" type="submit">Solve system &#8594;</button>
     </form>
     <div class="matrix-result" id="matrix-result" role="status" aria-live="polite"></div>
-  `, 'Browser demo of a 2 x 2 solver. The Python command-line project is in development.');
+  `, 'Interactive browser demo of a 3 by 3 solver. The Python command-line project is in development.');
 
   function solve() {
-    const values = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) =>
-      Number(demo.querySelector(`#${id}`).value)
+    const matrix = defaultMatrix.map((row, rowIndex) =>
+      row.map((value, columnIndex) =>
+        Number(demo.querySelector(`#matrix-${rowIndex}-${columnIndex}`).value)
+      )
     );
-    const [a, b, c, d, e, f] = values;
-    const determinant = a * d - b * c;
+    const vector = defaultVector.map((value, index) =>
+      Number(demo.querySelector(`#vector-${index}`).value)
+    );
     const result = demo.querySelector('#matrix-result');
-    const scale = Math.max(Math.abs(a * d), Math.abs(b * c), Number.MIN_VALUE);
-
-    if (![...values, determinant].every(Number.isFinite)) {
-      result.textContent = 'Use finite numbers within the supported numeric range.';
-      return;
+    try {
+      const solution = solveLinearSystem(matrix, vector);
+      result.textContent = solution.map((value, index) =>
+        `x${index + 1} = ${Math.abs(value) < 0.00005 ? '0.0000' : value.toFixed(4)}`
+      ).join('\n');
+    } catch (error) {
+      result.textContent = error.message;
     }
-    if (Math.abs(determinant) <= Number.EPSILON * 16 * scale) {
-      result.textContent = 'No stable unique solution. The coefficients are singular or nearly singular.';
-      return;
-    }
-
-    const x = (e * d - b * f) / determinant;
-    const y = (a * f - e * c) / determinant;
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      result.textContent = 'The result exceeds the supported numeric range.';
-      return;
-    }
-    result.textContent = `x = ${x.toFixed(4)}; y = ${y.toFixed(4)}\nDeterminant = ${determinant.toFixed(4)}`;
   }
 
   demo.querySelector('#matrix-form').addEventListener('submit', (event) => {
