@@ -24,20 +24,23 @@ const projects = [
     "link": "View source"
   },
   {
-    "id": "inventory",
-    "title": "Company inventory & job costing",
-    "short": "Inventory & job costing",
-    "subtitle": "Connecting company inventory with the cost of each job.",
-    "description": "A planned Java application connecting inventory, material usage, and job costs.",
+    "id": "jobledger",
+    "title": "JobLedger",
+    "short": "JobLedger",
+    "subtitle": "Company inventory and job costing in one workspace.",
+    "description": "A live web application for tracking inventory, material usage, and the cost of customer jobs.",
     "tags": [
-      "Java",
-      "OOP",
-      "File I/O"
+      "Next.js",
+      "Supabase",
+      "PostgreSQL",
+      "Vercel"
     ],
-    "status": "In development &#183; Target Dec 2026",
-    "idea": "Bring company inventory and job costing into one place. The planned workflow assigns materials and labor to jobs, tracks stock, and compares actual costs with estimates.",
-    "approach": "Start with categorized inventory and storage locations, then add jobs, material usage, unit costs, and labor records. This browser demo currently covers inventory; job costing is planned.",
-    "learning": "Object-oriented design, inventory transactions, and calculating material and labor costs per job."
+    "status": "Live",
+    "idea": "Connect the materials a company owns with the jobs that use them. Track categorized inventory, customer jobs, budgets, and actual costs in one place.",
+    "approach": "Build the application with Next.js and Supabase for authentication and saved records, then deploy it on Vercel. Material usage reduces stock and adds costs to a job; labor, equipment, and other expenses complete the cost picture.",
+    "learning": "Authenticated accounts, database access controls, inventory transactions, job budgets, and CSV exports. The public demo lets visitors explore fictional sample data without signing in. Saved company workspaces require authentication.",
+    "url": "https://jobledger.antonelli.dev/demo",
+    "link": "Try live demo"
   },
   {
     "id": "matrix",
@@ -73,14 +76,6 @@ const projects = [
   }
 ];
 
-const initialInventory = [
-  { name: 'Laptop', category: 'Electronics', quantity: 5, location: 'Office' },
-  { name: 'Keyboard', category: 'Electronics', quantity: 12, location: 'Storage' },
-  { name: 'Office chair', category: 'Furniture', quantity: 8, location: 'Office' },
-  { name: 'Notebook', category: 'Supplies', quantity: 50, location: 'Storage' },
-  { name: 'Monitor', category: 'Electronics', quantity: 6, location: 'Office' }
-];
-
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, (character) => {
     const entities = {
@@ -110,54 +105,37 @@ function statusHTML(project) {
   `;
 }
 
-function previewHTML(id) {
-  if (id === 'portfolio') {
-    return `
-      <div class="mini-nav">
-        <strong>german<span class="blue">.</span></strong>
-        <span>Home &nbsp; Projects &nbsp; About</span>
-      </div>
-      <div class="mini-home">
-        <div>
-          <h4>Build.<br>Learn.<br>Create.</h4>
-          <small>A software engineering portfolio, built one feature at a time.</small>
-          <span class="mini-pill">Explore projects &#8599;</span>
-        </div>
-        <div class="mini-shape"></div>
-      </div>
-    `;
+// Update these images after significant changes to either live application.
+const applicationScreenshots = {
+  portfolio: {
+    src: './portfolio-preview.jpg?v=20261004-screenshots',
+    alt: 'Screenshot of German Antonelli\'s live portfolio landing page',
+    url: 'https://www.antonelli.dev/',
+    link: 'Visit live website',
+    caption: 'Actual portfolio website, captured October 3, 2026.'
+  },
+  jobledger: {
+    src: './jobledger-preview.jpg?v=20261004-screenshots',
+    alt: 'Screenshot of the public JobLedger dashboard with inventory, jobs, and recorded costs',
+    url: 'https://jobledger.antonelli.dev/demo',
+    link: 'Try live demo',
+    caption: 'Actual JobLedger public demo with fictional sample data, captured October 3, 2026.'
   }
+};
 
-  if (id === 'inventory') {
-    const rows = initialInventory.map((item) => `
-      <tr>
-        <td>${escapeHTML(item.name)}</td>
-        <td>${escapeHTML(item.category)}</td>
-        <td>${item.quantity}</td>
-        <td>${escapeHTML(item.location)}</td>
-      </tr>
-    `).join('');
-
+function previewHTML(id) {
+  const screenshot = applicationScreenshots[id];
+  if (screenshot) {
     return `
-      <div class="mini-inventory">
-        <div class="mini-side">
-          <b>Inventory Tracker</b>
-          <span>Items</span>
-          <span>Add item</span>
-          <span>Categories</span>
-          <span>Import / Export</span>
-        </div>
-        <div class="mini-main">
-          <h4>Inventory <span class="blue">+</span></h4>
-          <div class="mini-search">Search items...</div>
-          <table class="mini-table">
-            <thead>
-              <tr><th>Name</th><th>Category</th><th>Qty</th><th>Location</th></tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </div>
+      <img
+        class="application-screenshot"
+        src="${escapeHTML(screenshot.src)}"
+        alt="${escapeHTML(screenshot.alt)}"
+        width="1348"
+        height="926"
+        loading="lazy"
+        decoding="async"
+      >
     `;
   }
 
@@ -372,10 +350,8 @@ function demoShell(title, content, caption) {
 
 function renderDemo(id) {
   const demo = document.getElementById('demo');
-  if (id === 'portfolio') {
-    renderPortfolioDemo(demo);
-  } else if (id === 'inventory') {
-    renderInventoryDemo(demo);
+  if (applicationScreenshots[id]) {
+    renderApplicationPreview(demo, id);
   } else if (id === 'matrix') {
     renderMatrixDemo(demo);
   } else {
@@ -383,141 +359,40 @@ function renderDemo(id) {
   }
 }
 
-function renderPortfolioDemo(demo) {
-  demo.innerHTML = demoShell('From request to response', `
-    <h3>How the pieces connect</h3>
-    <div class="flow-demo">
-      <button type="button" data-step="0" aria-pressed="true">
-        01 Browser &#8594; JSON request
-      </button>
-      <button type="button" data-step="1" aria-pressed="false">
-        02 Spring Boot &#8594; API handler
-      </button>
-      <button type="button" data-step="2" aria-pressed="false">
-        03 Response &#8594; Interface update
-      </button>
+function renderApplicationPreview(demo, id) {
+  const screenshot = applicationScreenshots[id];
+  const project = projects.find((item) => item.id === id);
+  demo.innerHTML = `
+    <div class="demo-head">
+      <span>${escapeHTML(project.title)}</span>
+      <span>LIVE APPLICATION</span>
     </div>
-    <p class="flow-description" id="flow-description" role="status"></p>
-  `, 'Architecture illustration. Select a step to explore the request flow.');
-
-  const descriptions = [
-    'The frontend sends a projectName value as JSON to POST /api/add-project on the Render backend.',
-    'Spring Boot checks the submitted name and creates a pending project. Admin review requests require authorization.',
-    'The browser checks the HTTP response and displays confirmation or an error.'
-  ];
-  const buttons = demo.querySelectorAll('[data-step]');
-
-  function selectStep(index) {
-    buttons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(Number(button.dataset.step) === index));
-    });
-    demo.querySelector('#flow-description').textContent = descriptions[index];
-  }
-
-  buttons.forEach((button) => {
-    button.addEventListener('click', () => selectStep(Number(button.dataset.step)));
-  });
-  selectStep(0);
+    <a
+      class="application-preview-link"
+      href="${escapeHTML(screenshot.url)}"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="${escapeHTML(screenshot.link)} (opens in a new tab)"
+    >
+      <img
+        class="application-detail-screenshot"
+        src="${escapeHTML(screenshot.src)}"
+        alt="${escapeHTML(screenshot.alt)}"
+        width="1348"
+        height="926"
+        decoding="async"
+      >
+    </a>
+    <div class="application-preview-actions">
+      <a class="btn primary" href="${escapeHTML(screenshot.url)}" target="_blank" rel="noopener noreferrer">
+        ${escapeHTML(screenshot.link)} &#8599;
+      </a>
+      <p>${id === 'jobledger' ? 'No account needed. Explore the demo with fictional sample data.' : 'Explore the deployed portfolio and its project pages.'}</p>
+    </div>
+    <div class="demo-caption">${escapeHTML(screenshot.caption)}</div>
+  `;
 }
 
-function renderInventoryDemo(demo) {
-  demo.innerHTML = demoShell('Inventory tracker', `
-    <h3>Inventory</h3>
-    <label for="inventory-search">Search items</label>
-    <input id="inventory-search" class="field" placeholder="Search name, category, or location...">
-    <div class="table-scroll">
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>Item</th><th>Category</th><th>Quantity</th><th>Location</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="inventory-items"></tbody>
-      </table>
-    </div>
-    <p id="inventory-count" class="demo-hint" role="status"></p>
-    <form id="add-item" class="add-form">
-      <div>
-        <label for="item-name">New item</label>
-        <input id="item-name" class="field" required maxlength="60" placeholder="Item name">
-      </div>
-      <div>
-        <label for="item-category">Category</label>
-        <input id="item-category" class="field" required maxlength="40" placeholder="Electronics">
-      </div>
-      <div>
-        <label for="item-location">Location</label>
-        <input id="item-location" class="field" required maxlength="40" placeholder="Office">
-      </div>
-      <div>
-        <label for="item-qty">Quantity</label>
-        <input id="item-qty" class="field" type="number" min="1" max="999999" value="1" required>
-      </div>
-      <button class="btn primary small" type="submit">+ Add item</button>
-    </form>
-  `, 'Browser concept demo. Changes reset when this project closes; the Java application is in development.');
-
-  const items = initialInventory.map((item) => ({ ...item }));
-  const search = demo.querySelector('#inventory-search');
-  const body = demo.querySelector('#inventory-items');
-
-  function draw() {
-    const query = search.value.trim().toLowerCase();
-    body.replaceChildren();
-
-    items.forEach((item, index) => {
-      const searchableText = `${item.name} ${item.category} ${item.location}`.toLowerCase();
-      if (!searchableText.includes(query)) {
-        return;
-      }
-
-      const row = document.createElement('tr');
-      const name = document.createElement('td');
-      const category = document.createElement('td');
-      const location = document.createElement('td');
-      const quantity = document.createElement('td');
-      const action = document.createElement('td');
-      const remove = document.createElement('button');
-      name.textContent = item.name;
-      category.textContent = item.category;
-      location.textContent = item.location;
-      quantity.textContent = item.quantity;
-      remove.type = 'button';
-      remove.className = 'delete-item';
-      remove.textContent = 'Remove';
-      remove.setAttribute('aria-label', `Remove ${item.name}`);
-      remove.addEventListener('click', () => {
-        items.splice(index, 1);
-        draw();
-      });
-      action.append(remove);
-      row.append(name, category, quantity, location, action);
-      body.append(row);
-    });
-
-    demo.querySelector('#inventory-count').textContent =
-      `${body.children.length} of ${items.length} items shown`;
-  }
-
-  search.addEventListener('input', draw);
-  demo.querySelector('#add-item').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const name = demo.querySelector('#item-name').value.trim();
-    const category = demo.querySelector('#item-category').value.trim();
-    const location = demo.querySelector('#item-location').value.trim();
-    const quantity = Number(demo.querySelector('#item-qty').value);
-    if (!name || !category || !location || !Number.isInteger(quantity) || quantity < 1 || quantity > 999999) {
-      return;
-    }
-    items.push({ name, category, quantity, location });
-    event.currentTarget.reset();
-    draw();
-  });
-  draw();
-}
-
-// Solve A x = b using scaled partial pivoting and back substitution.
-// Inputs are copied so the user's original matrix remains unchanged.
 function solveLinearSystem(matrix, vector) {
   const size = matrix.length;
   const rows = matrix.map((row, index) => [...row, vector[index]]);
